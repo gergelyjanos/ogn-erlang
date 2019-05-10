@@ -4,7 +4,8 @@
 %% @version 1.0.0
 
 -module(startup).
+-export([main/0]).
 
--export([run/0]).
-
-run() ->  "Hello OGN".
+main() ->  
+    ClientPid = spawn(aprsclient, run, []),
+    io:read("running?").
