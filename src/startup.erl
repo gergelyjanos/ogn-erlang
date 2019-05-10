@@ -5,6 +5,6 @@
 
 -module(startup).
 
--export([test1/1]).
+-export([run/0]).
 
-test1(Data) ->  Data+1.
+run() ->  "Hello OGN".
