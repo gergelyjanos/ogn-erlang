@@ -6,6 +6,10 @@
 -module(startup).
 -export([main/0]).
 
-main() ->  
-    ClientPid = spawn(aprsclient, run, []),
-    io:read("running?").
+main() ->
+    Parser = spawn(parser, run, []),
+    io:format("Parser Pid ~p~n", [Parser]),
+    Client = spawn(aprsclient, run, [Parser]),
+    io:format("Client Pid ~p~n", [Client]),
+    io:read("running?")
+.

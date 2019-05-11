@@ -4,56 +4,53 @@
 %% @version 1.0.0
 
 -module(aprsclient).
--export([run/0]).
-%% -import(gen_tcp, [connect/3, recv/2, send/2]).
+-export([run/1]).
 
 -define(AprsPort, 10152).
 -define(AprsHost, "aprs.glidernet.org").
 -define(LoginMessage, "user td1990 pass -1 vers ogn_erlang 1.0.0\r\n").
+-define(ConnectOptions,	[binary, {active, false}, {packet, line}, {delay_send, false}, {nodelay, true}]).
 
-run() ->
-    {ok, Socket} = gen_tcp:connect(?AprsHost, ?AprsPort, [binary, {active, false}, {packet, line}, {delay_send, false}, {nodelay, true}]),
+%% @doc Public function to run the TCP reader for read lines from socket and send to parser.
+run(Parser) ->
+    {ok, Socket} = gen_tcp:connect(?AprsHost, ?AprsPort, ?ConnectOptions),
     io:format("Socket connected: ~p~n", [Socket]),
     {ok, ServerName} = gen_tcp:recv(Socket, 0),
     io:format("Received ServerName: ~p~n", [ServerName]),
     ok = gen_tcp:send(Socket, ?LoginMessage),
     io:format("Logged in: ~p~n", [?LoginMessage]),
-    % spawn(aprsclient, startkeepalive, [Socket]),    
-    readpassivemode(Socket).
-    % readactivemode(Socket).
+    readpassivemode(Socket, Parser)
+.
 
-readpassivemode(Socket) ->
-    io:format("Socket waiting~n"),
-    case gen_tcp:recv(Socket, 0, 50000) of    
-        {ok, Binary} ->
-            io:format("Socket received: ~p~n", [Binary]),
-            % gen_tcp:send(Socket, "#keepalive"),
-            readpassivemode(Socket);
-        {error, timeout } ->
-            io:format("Socket timedout: ~n"),
-            gen_tcp:send(Socket, "#keepalive"),
-            readpassivemode(Socket);
-        {error, closed} ->
-            io:format("Socket closed~n");
-        {error, Reason} ->
-            io:format("Socket error ~p~n", [Reason]),
-            readpassivemode(Socket)
-    end.
+%% @doc Private function to read lines for ever and send to the parser.
+readpassivemode(Socket, Parser) ->
+    case gen_tcp:recv(Socket, 0, 50000) of
+	    {ok, Line} ->
+			Len=string:length(Line),
+			Comment = string:prefix(Line, "#"),
+			io:format("Socket received: ~p ~p ~p~n", [Len, Comment, Line]),
+			if 
+				Comment == nomatch -> 
+					Parser ! {line, Line};
+				true -> 
+					sendkeepalive(Socket),
+					Parser ! {comment, Comment}
+			end;
+    	{error, timeout} ->
+			io:format("Socket timedout: ~n"),
+			sendkeepalive(Socket);
+		{error, closed} -> 
+			% TODO kill process
+			io:format("Socket closed~n"),
+			Parser ! {closed};
+		{error, Reason} ->
+			io:format("Socket error ~p~n", [Reason])
+    end,
+	readpassivemode(Socket, Parser)
+.
 
-% startkeepalive(Socket) ->
-%     timer:apply_interval(240000, aprsclient, sendkeepalive, [Socket]).
+%% @doc Private function to send #keepalive message to the server.
+sendkeepalive(Socket) ->
+    gen_tcp:send(Socket, "#keepalive")
+.
 
-% sendkeepalive(Socket) ->
-%     io:format("Socket keepalive~n"),
-%     gen_tcp:send(Socket, "#keepalive").
-
-% readactivemode(Socket) ->
-%     receive 
-%         {tcp, Socket, Message} ->
-%             io:format("Received: ~p~n", [Message]),
-%             readnext(Socket);
-%         {tcp_close, Socket} ->
-%             io:format("Socket closed~n")
-%     end.
-
-%% {ok, Message} = gen_tcp:recv(Socket, 0),
