@@ -11,7 +11,7 @@ run() ->
     receive 
         {line, Line} -> parseline(Line), run();
         {comment, Comment} -> parsecomment(Comment), run();
-        {closed} -> io:format("Close parser~n")
+        {close} -> io:format("Close parser~n")
     end
 .	
 

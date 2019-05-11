@@ -26,9 +26,8 @@ run(Parser) ->
 readpassivemode(Socket, Parser) ->
     case gen_tcp:recv(Socket, 0, 50000) of
 	    {ok, Line} ->
-			Len=string:length(Line),
 			Comment = string:prefix(Line, "#"),
-			io:format("Socket received: ~p ~p ~p~n", [Len, Comment, Line]),
+			% io:format("Socket received: ~p ~p~n", [Comment, Line]),
 			if 
 				Comment == nomatch -> 
 					Parser ! {line, Line};
@@ -42,7 +41,7 @@ readpassivemode(Socket, Parser) ->
 		{error, closed} -> 
 			% TODO kill process
 			io:format("Socket closed~n"),
-			Parser ! {closed};
+			Parser ! {close};
 		{error, Reason} ->
 			io:format("Socket error ~p~n", [Reason])
     end,
