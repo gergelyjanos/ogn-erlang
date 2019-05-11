@@ -5,6 +5,7 @@
 
 -module(parser).
 -export([run/0]).
+-include("parser_records.hrl").
 
 -define(aircraftData, Device, MessageFormat, Receiver, Timestamp, Latitude, Longitude, Heading, GroundSpeed, Altitude, Comment).
 -define(aircraftAdditionalData, DeviceId, ClimbRate, TurnRate).
@@ -25,11 +26,11 @@ run() ->
 .	
 
 parseline(Line) -> 
-    ParseStatus = parseline(aircraft, string:chomp(Line)),
-    if 
-        ParseStatus == nomatch -> 
-            io:format("Line parser nomatch ~p~n", [Line]);
-        true -> true
+    case parseline(aircraft, string:chomp(Line)) of
+        {match, Data} ->
+            io:format("~p~n", [Data]);
+        nomatch -> 
+            io:format("Line parser nomatch ~p~n", [Line])
     end
 .
 
@@ -39,9 +40,22 @@ parseline(aircraft, Line) ->
     case re:run(Line, AircraftRegex, [{capture, all_but_first, list}]) of 
         {match, [?aircraftData]} ->
             [?aircraftAdditionalData] = parseAircraftAdditionalData(Comment),
-            io:format("Aircraft match ~p~n", [[Device, Receiver, Latitude, Longitude, Altitude, Heading, GroundSpeed, ClimbRate, TurnRate]]),
+            Aircraft = #aircraft{
+                device = Device, 
+                messageFormat = MessageFormat,
+                receiver = Receiver,
+                timestamp = Timestamp,
+                latitude = Latitude,
+                longitude = Longitude,
+                heading = Heading,
+                groundSpeed = GroundSpeed,
+                altitude = Altitude,
+                deviceId = DeviceId,
+                climbRate = ClimbRate,
+                turnRate = TurnRate
+            },
             % todo send aircraft data to DB
-            match;
+            {match, Aircraft};
         nomatch ->
             parseline(receiverPosition, Line)
     end
@@ -50,9 +64,16 @@ parseline(receiverPosition, Line) ->
     {ok, Regex} = re:compile(?RECEIVERPOSITION_PATTERN, [unicode]),
     case re:run(Line, Regex, [{capture, all_but_first, list}]) of 
         {match, [?receiverPosition]} ->
-            % todo send receiver position data to DB
-            io:format("Receiver position match ~p~n", [[Receiver]]),
-            match;
+            ReceiverPosition = #receiverPosition{
+                receiver = Receiver,
+                messageFormat = MessageFormat,
+                server = Server,
+                timestamp = Timestamp,
+                latitude = Latitude,
+                longitude = Longitude,
+                altitude = Altitude
+            },
+            {match, ReceiverPosition};
         nomatch -> 
             parseline(receiverStatus, Line)
     end
@@ -61,8 +82,17 @@ parseline(receiverStatus, Line) ->
     {ok, Regex} = re:compile(?RECEIVERSTATUS_PATTERN, [unicode]),
     case re:run(Line, Regex, [{capture, all_but_first, list}]) of 
         {match, [?receiverStatus]} ->
-            io:format("Receiver status match ~p~n", [[Receiver, Cpu, Ram]]),
-            match;
+            ReceiverStatus = #receiverStatus{
+                receiver = Receiver,
+                messageFormat = MessageFormat,
+                server = Server,
+                timestamp = Timestamp,
+                version = Version,
+                cpu = Cpu,
+                ram = Ram,
+                other = Other
+            },
+            {match, ReceiverStatus};
         nomatch -> 
             nomatch
     end
