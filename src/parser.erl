@@ -6,10 +6,12 @@
 -module(parser).
 -export([run/0]).
 
--define(beaconData, Device, MessageFormat, Receiver, Timestamp, Latitude, Longitude, Heading, GroundSpeed, Altitude, Comment).
+-define(aircraftData, Device, MessageFormat, Receiver, Timestamp, Latitude, Longitude, Heading, GroundSpeed, Altitude, Comment).
+-define(aircraftAdditionalData, DeviceId, ClimbRate, TurnRate).
 -define(receiverPosition, Receiver, MessageFormat, Server, Timestamp, Latitude, Longitude, Altitude).
 -define(receiverStatus, Receiver, MessageFormat, Server, Timestamp, Version, Cpu, Ram, Other).
--define(AIRCRAFT_PATTERN, "^(?P<device>.+)>(?P<message_format>.+),.+,(?P<receiver>.+):\\/(?P<timestamp>\\d+)h(?P<latitude>\\d+\\.\\d+[NS])[\\/\\\\]+(?P<longitude>\\d+\\.\\d+[EW])(?P<heading>\\S\\d+)\\/(?P<ground_speed>\\d+)\\/A=(?P<altitude>\\d+)\\s(?P<comment>.*)$").
+-define(AIRCRAFT_PATTERN, "^(?P<device>.+)>(?P<message_format>.+),.+,(?P<receiver>.+):\\/(?P<timestamp>\\d+)h(?P<latitude>\\d+\\.\\d+[NS])[\\/\\\\]+(?P<longitude>\\d+\\.\\d+[EW])(?P<heading>\\S\\d+)\\/(?P<ground_speed>\\d+)\\/A=(?P<altitude>\\d+)\\s+(?P<comment>.*)\\s*$").
+-define(AIRCRAFTCOMMENT_PATTERN, "^!\\S+!\\s+(?P<device_id>id[0-9a-fA-F]{8})\\s+(?P<climb_rate>[+-]*\\d+.p.)\\s+(?P<turn_rate>[+-]*[\\d\\.]+rot)\\s*.*$").
 -define(RECEIVERPOSITION_PATTERN, "^(?P<receiver>.+)>(?P<message_format>.+),.+,.+,(?P<server>.+):\\/(?P<timestamp>\\d+)h(?P<latitude>\\d+\\.\\d+[NS])[\\/\\\\I]+(?P<longitude>\\d+\\.\\d+[EW])[\\/\\&]+A=(?P<altitude>\\d+)$").
 -define(RECEIVERSTATUS_PATTERN, "^(?P<receiver>.+)>(?P<message_format>.+),.+,.+,(?P<server>.+):>(?P<timestamp>\\d+)h\\s+(?P<version>.+)\\s+CPU:(?P<cpu>\\d+\\.\\d+)\s+RAM:(?P<ram>\\S+)\\s+(?P<other>.*)$").
 
@@ -35,10 +37,10 @@ parseline(Line) ->
 parseline(aircraft, Line) ->
     {ok, AircraftRegex} = re:compile(?AIRCRAFT_PATTERN, [unicode]),
     case re:run(Line, AircraftRegex, [{capture, all_but_first, list}]) of 
-        {match, [?beaconData]} ->
-            % todo parse more data from comment
+        {match, [?aircraftData]} ->
+            [?aircraftAdditionalData] = parseAircraftAdditionalData(Comment),
+            io:format("Aircraft match ~p~n", [[Device, Receiver, Latitude, Longitude, Altitude, Heading, GroundSpeed, ClimbRate, TurnRate]]),
             % todo send aircraft data to DB
-            io:format("Aircraft match ~p~n", [[Device, Receiver, Latitude, Longitude, Heading, GroundSpeed]]),
             match;
         nomatch ->
             parseline(receiverPosition, Line)
@@ -59,13 +61,23 @@ parseline(receiverStatus, Line) ->
     {ok, Regex} = re:compile(?RECEIVERSTATUS_PATTERN, [unicode]),
     case re:run(Line, Regex, [{capture, all_but_first, list}]) of 
         {match, [?receiverStatus]} ->
-            % todo send receiver status data to DB
             io:format("Receiver status match ~p~n", [[Receiver, Cpu, Ram]]),
             match;
         nomatch -> 
             nomatch
     end
 .
+
+parseAircraftAdditionalData(Comment) ->
+    {ok, Regex} = re:compile(?AIRCRAFTCOMMENT_PATTERN, [unicode]),
+    case re:run(Comment, Regex, [{capture, all_but_first, list}]) of 
+        {match, [?aircraftAdditionalData]} ->
+            [?aircraftAdditionalData];
+        nomatch -> 
+            ["", "", ""]
+    end
+.
+
 
 %% @doc Private function to parse comment.
 parsecomment(Comment) ->
