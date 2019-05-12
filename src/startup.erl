@@ -4,7 +4,14 @@
 %% @version 1.0.0
 
 -module(startup).
--export([main/0]).
+-behavior(application).
+-export([start/2, stop/1, main/0]).
+
+start(_Type, _Args) ->
+    main().
+
+stop(_State) ->
+    ok.
 
 main() ->
     Parser = spawn(parser, run, []),
