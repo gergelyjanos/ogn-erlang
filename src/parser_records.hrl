@@ -3,12 +3,12 @@
 %% @copyright 2019 TD*1990
 %% @version 1.0.0
 
--record(aircraft, 
+-record(aircraftPosition, 
     {
         device, 
         messageFormat, 
         receiver, 
-        timestamp, 
+        time, 
         latitude, 
         longitude, 
         heading, 
@@ -24,7 +24,7 @@
         receiver, 
         messageFormat, 
         server, 
-        timestamp, 
+        time, 
         latitude, 
         longitude, 
         altitude    
@@ -35,7 +35,7 @@
         receiver, 
         messageFormat, 
         server, 
-        timestamp, 
+        time, 
         version, 
         cpu, 
         ram, 

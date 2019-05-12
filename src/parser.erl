@@ -11,10 +11,14 @@
 -define(aircraftAdditionalData, DeviceId, ClimbRate, TurnRate).
 -define(receiverPosition, Receiver, MessageFormat, Server, Timestamp, Latitude, Longitude, Altitude).
 -define(receiverStatus, Receiver, MessageFormat, Server, Timestamp, Version, Cpu, Ram, Other).
+-define(timestamp, Hour, Minute, Second).
+
 -define(AIRCRAFT_PATTERN, "^(?P<device>.+)>(?P<message_format>.+),.+,(?P<receiver>.+):\\/(?P<timestamp>\\d+)h(?P<latitude>\\d+\\.\\d+[NS])[\\/\\\\]+(?P<longitude>\\d+\\.\\d+[EW])(?P<heading>\\S\\d+)\\/(?P<ground_speed>\\d+)\\/A=(?P<altitude>\\d+)\\s+(?P<comment>.*)\\s*$").
 -define(AIRCRAFTCOMMENT_PATTERN, "^!\\S+!\\s+(?P<device_id>id[0-9a-fA-F]{8})\\s+(?P<climb_rate>[+-]*\\d+.p.)\\s+(?P<turn_rate>[+-]*[\\d\\.]+rot)\\s*.*$").
 -define(RECEIVERPOSITION_PATTERN, "^(?P<receiver>.+)>(?P<message_format>.+),.+,.+,(?P<server>.+):\\/(?P<timestamp>\\d+)h(?P<latitude>\\d+\\.\\d+[NS])[\\/\\\\I]+(?P<longitude>\\d+\\.\\d+[EW])[\\/\\&]+A=(?P<altitude>\\d+)$").
 -define(RECEIVERSTATUS_PATTERN, "^(?P<receiver>.+)>(?P<message_format>.+),.+,.+,(?P<server>.+):>(?P<timestamp>\\d+)h\\s+(?P<version>.+)\\s+CPU:(?P<cpu>\\d+\\.\\d+)\s+RAM:(?P<ram>\\S+)\\s+(?P<other>.*)$").
+-define(TIMESTAMP_PATTERN, "^(\\d\\d)(\\d\\d)(\\d\\d)$").
+
 
 %% @doc Public function to parse messages.
 run() ->
@@ -40,11 +44,11 @@ parseline(aircraft, Line) ->
     case re:run(Line, AircraftRegex, [{capture, all_but_first, list}]) of 
         {match, [?aircraftData]} ->
             [?aircraftAdditionalData] = parseAircraftAdditionalData(Comment),
-            Aircraft = #aircraft{
+            AircraftPosition = #aircraftPosition{
                 device = Device, 
                 messageFormat = MessageFormat,
                 receiver = Receiver,
-                timestamp = Timestamp,
+                time = timestampToDateTime(Timestamp),
                 latitude = Latitude,
                 longitude = Longitude,
                 heading = Heading,
@@ -55,7 +59,7 @@ parseline(aircraft, Line) ->
                 turnRate = TurnRate
             },
             % todo send aircraft data to DB
-            {match, Aircraft};
+            {match, AircraftPosition};
         nomatch ->
             parseline(receiverPosition, Line)
     end
@@ -68,7 +72,7 @@ parseline(receiverPosition, Line) ->
                 receiver = Receiver,
                 messageFormat = MessageFormat,
                 server = Server,
-                timestamp = Timestamp,
+                time = timestampToDateTime(Timestamp),
                 latitude = Latitude,
                 longitude = Longitude,
                 altitude = Altitude
@@ -86,7 +90,7 @@ parseline(receiverStatus, Line) ->
                 receiver = Receiver,
                 messageFormat = MessageFormat,
                 server = Server,
-                timestamp = Timestamp,
+                time = timestampToDateTime(Timestamp),
                 version = Version,
                 cpu = Cpu,
                 ram = Ram,
@@ -113,3 +117,24 @@ parseAircraftAdditionalData(Comment) ->
 parsecomment(Comment) ->
 	io:format("Comment parser ~p~n", [Comment])
 .	
+
+timestampToDateTime(Timestamp) ->
+    {ok, Regex} = re:compile(?TIMESTAMP_PATTERN, [unicode]),
+    case re:run(Timestamp, Regex, [{capture, all_but_first, list}]) of 
+        {match, [?timestamp]} ->
+            {DateNow, TimeNow} = calendar:universal_time(),
+            SecondsNow = calendar:time_to_seconds(TimeNow),
+            Time = {list_to_integer(Hour), list_to_integer(Minute), list_to_integer(Second)},
+            SecondsTime = calendar:time_to_seconds(Time),
+            if
+                SecondsNow < SecondsTime -> 
+                    DaysNow = calendar:date_to_gregorian_days(DateNow),
+                    DateYesterday = calendar:gregorian_days_to_date(DaysNow - 1),
+                    {DateYesterday, Time};
+                true ->
+                    {DateNow, Time}
+            end;
+        nomatch -> 
+            calendar:universal_time()
+    end
+.
