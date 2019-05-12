@@ -82,8 +82,8 @@ parseline(aircraft, Line, Regexps) ->
                 messageFormat = MessageFormat,
                 receiver = Receiver,
                 time = timestampToDateTime(Timestamp, Regexps),
-                latitude = string:to_float(Latitude),
-                longitude = string:to_float(Longitude),
+                latitude = latlonParser(lat, Latitude),
+                longitude = latlonParser(lon, Longitude),
                 heading = {list_to_integer(Heading), d},
                 groundSpeed = {list_to_integer(GroundSpeed), kmph},
                 altitude = {list_to_integer(Altitude), m},
@@ -106,8 +106,8 @@ parseline(receiverPosition, Line, Regexps) ->
                 messageFormat = MessageFormat,
                 server = Server,
                 time = timestampToDateTime(Timestamp, Regexps),
-                latitude = string:to_float(Latitude),
-                longitude = string:to_float(Longitude),
+                latitude = latlonParser(lat, Latitude),
+                longitude = latlonParser(lon, Longitude),
                 altitude = {list_to_integer(Altitude), m}
             },
             {match, ReceiverPosition};
@@ -169,5 +169,35 @@ timestampToDateTime(Timestamp, Regexps) ->
             end;
         nomatch -> 
             calendar:universal_time()
+    end
+.
+
+latlonParser(lat, Line) ->
+    % DDMM.HHN
+    % 01234567
+    Degree = list_to_integer(string:slice(Line, 0, 2)),
+    Minute = list_to_integer(string:slice(Line, 2, 2)),
+    Second = list_to_integer(string:slice(Line, 5, 2)),
+    Globe = string:slice(Line, 7, 1),
+    DD = Degree + (Minute / 60) + (Second / 3600),
+    if 
+        Globe == "N" ->
+            {DD, degree, Line};
+        Globe == "S" ->
+            {-DD, degree, Line}
+    end;
+latlonParser(lon, Line) ->
+    % DDDMM.HHN
+    % 012345678
+    Degree = list_to_integer(string:slice(Line, 0, 3)),
+    Minute = list_to_integer(string:slice(Line, 3, 2)),
+    Second = list_to_integer(string:slice(Line, 6, 2)),
+    Globe = string:slice(Line, 8, 1),
+    DD = Degree + (Minute / 60) + (Second / 3600),
+    if 
+        Globe == "E" ->
+            {DD, degree, Line};
+        Globe == "W" ->
+            {-DD, degree, Line}
     end
 .
