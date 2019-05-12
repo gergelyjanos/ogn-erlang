@@ -4,7 +4,7 @@
 %% @version 1.0.0
 
 -module(aprsclient).
--export([run/1]).
+-export([start/1]).
 
 -define(AprsPort, 10152).
 -define(AprsHost, "aprs.glidernet.org").
@@ -12,22 +12,21 @@
 -define(ConnectOptions,	[binary, {active, false}, {packet, line}, {delay_send, false}, {nodelay, true}]).
 
 %% @doc Public function to run the TCP reader for read lines from socket and send to parser.
-run(Parser) ->
+start(Parser) ->
     {ok, Socket} = gen_tcp:connect(?AprsHost, ?AprsPort, ?ConnectOptions),
     io:format("Socket connected: ~p~n", [Socket]),
     {ok, ServerName} = gen_tcp:recv(Socket, 0),
     io:format("Received ServerName: ~p~n", [ServerName]),
     ok = gen_tcp:send(Socket, ?LoginMessage),
     io:format("Logged in: ~p~n", [?LoginMessage]),
-    readpassivemode(Socket, Parser)
+    runpassivemode(Socket, Parser)
 .
 
 %% @doc Private function to read lines for ever and send to the parser.
-readpassivemode(Socket, Parser) ->
-    case gen_tcp:recv(Socket, 0, 50000) of
+runpassivemode(Socket, Parser) ->
+    Result = case gen_tcp:recv(Socket, 0, 50000) of
 	    {ok, Line} ->
 			Comment = string:prefix(Line, "#"),
-			% io:format("Socket received: ~p ~p~n", [Comment, Line]),
 			if 
 				Comment == nomatch -> 
 					Parser ! {line, Line};
@@ -39,13 +38,18 @@ readpassivemode(Socket, Parser) ->
 			io:format("Socket timedout: ~n"),
 			sendkeepalive(Socket);
 		{error, closed} -> 
-			% TODO kill process
 			io:format("Socket closed~n"),
-			Parser ! {close};
+			Parser ! {close},
+			stopRuning;
 		{error, Reason} ->
 			io:format("Socket error ~p~n", [Reason])
     end,
-	readpassivemode(Socket, Parser)
+	if 
+		Result == stopRuning ->
+			socketClosed;
+		true->	
+			runpassivemode(Socket, Parser)
+	end
 .
 
 %% @doc Private function to send #keepalive message to the server.

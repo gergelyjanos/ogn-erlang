@@ -14,9 +14,11 @@ stop(_State) ->
     ok.
 
 main() ->
-    Parser = spawn(parser, run, []),
+    Parser = spawn(parser, start, []),
     io:format("Parser Pid ~p~n", [Parser]),
-    Client = spawn(aprsclient, run, [Parser]),
+
+    Client = spawn(aprsclient, start, [Parser]),
     io:format("Client Pid ~p~n", [Client]),
+
     io:read("running?")
 .
