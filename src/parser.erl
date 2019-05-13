@@ -68,21 +68,22 @@ compileRegexp() ->
 parseline(Regexps) -> 
     receive
         Line ->
-            io:format("[~p] ~p~n", [self(), Line]),
+            % io:format("[~p] ~p~n", [self(), Line]),
             case parseline(aircraft, string:chomp(Line), Regexps) of
                 {aircraftPosition, AircraftPosition} ->
                     Db = whereis(aircraftPositionDb),
                     Db ! {create, AircraftPosition};
-                {receiverPosition, ReceiverPosition} ->
-                    Db = whereis(receiverPositionDb),
-                    io:format("~p ~p~n", [Db, ReceiverPosition]);
+                {receiverPosition, _ReceiverPosition} ->
+                    _Db = whereis(receiverPositionDb);
+                    % io:format("~p ~p~n", [Db, ReceiverPosition]);
                     % Db ! {createorupdate, ReceiverPosition};
-                {receiverStatus, ReceiverStatus} ->
-                    Db = whereis(receiverStatusDb),
-                    io:format("~p ~p~n", [Db, ReceiverStatus]);
+                {receiverStatus, _ReceiverStatus} ->
+                    _Db = whereis(receiverStatusDb);
+                    % io:format("~p ~p~n", [Db, ReceiverStatus]);
                     % Db ! {createorupdate, ReceiverStatus};
                 nomatch -> 
-                    io:format("Line parser nomatch ~p~n", [Line])
+                    % io:format("Line parser nomatch ~p~n", [Line])
+                    nomatch
             end
     end
 .

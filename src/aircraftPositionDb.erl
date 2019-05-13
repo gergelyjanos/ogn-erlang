@@ -4,19 +4,19 @@
 %% @version 1.0.0
 
 -module(aircraftPositionDb).
--export([start/0]).
+-export([start/0, list/0]).
 -include("aircraftPositionRecord.hrl").
 
 start() ->
-    Table = ets:new(aircraftPositionTable, [{keypos, #aircraftPosition.device}]),
+    Table = ets:new(aircraftPositionTable, [named_table, {keypos, #aircraftPosition.device}]),
     run(Table)
 .
 
 run(Table) ->
     receive
         {create, Position} ->
-            Inserted = ets:insert(Table, Position),
-            io:format("Aircraft Db created ~p ~p~n", [Inserted, Position]),
+            _Inserted = ets:insert(Table, Position),
+            % io:format("Aircraft Db created ~p ~p~n", [Inserted, Position]),
             ok;
         {update, _Position} ->
             ok;
@@ -28,4 +28,6 @@ run(Table) ->
     run(Table)
 .
 
-    
+list() ->
+    [count, ets:select_count(aircraftPositionTable, [])]
+.    

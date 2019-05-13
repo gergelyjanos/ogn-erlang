@@ -8,7 +8,9 @@
 
 % http://localhost:8080/api/aircraftpositionapi/list
 list(SessionID, _Env, _Input) -> 
-    mod_esi:deliver(SessionID, ["Content-Type: text/html\r\n\r\n", "<html><body>Hello aircraft! all data</body></html>" ])
+    % DbList = "akarmi", % aircraftPositionDb:list(),
+    % io:format("api ~p~n", DbList),
+    mod_esi:deliver(SessionID, ["Content-Type: text/html\r\n\r\n", "<html><body><pre>akarmi</pre></body></html>" ])
 .
 
 
