@@ -16,12 +16,6 @@ run() ->
     receive
         {create, Position} ->
             _Inserted = ets:insert(aircraftPositionTable, Position),
-            ok;
-        {update, _Position} ->
-            ok;
-        {delete, _Position} ->
-            ok;
-        {readAll, _Filter} ->
             ok
     end,
     run()

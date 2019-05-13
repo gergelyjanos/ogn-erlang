@@ -16,11 +16,15 @@ stop(_State) ->
 main() ->
     HttpServer = spawn(httpserver, start, []),
     register(httpserver, HttpServer),
-    io:format("Parser Pid ~p~n", [HttpServer]),
+    io:format("HttpServer Pid ~p~n", [HttpServer]),
 
     AircraftPositionDb = spawn(aircraftPositionDb, start, []),
     register(aircraftPositionDb, AircraftPositionDb),
-    io:format("Parser Pid ~p~n", [AircraftPositionDb]),
+    io:format("AircraftPositionDb Pid ~p~n", [AircraftPositionDb]),
+
+    ReceiverPositionDb = spawn(receiverPositionDb, start, []),
+    register(receiverPositionDb, ReceiverPositionDb),
+    io:format("ReceiverPositionDb Pid ~p~n", [ReceiverPositionDb]),
 
     Parser = spawn(parser, start, []),
     io:format("Parser Pid ~p~n", [Parser]),

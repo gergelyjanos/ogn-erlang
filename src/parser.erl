@@ -73,16 +73,13 @@ parseline(Regexps) ->
                 {aircraftPosition, AircraftPosition} ->
                     Db = whereis(aircraftPositionDb),
                     Db ! {create, AircraftPosition};
-                {receiverPosition, _ReceiverPosition} ->
-                    _Db = whereis(receiverPositionDb);
-                    % io:format("~p ~p~n", [Db, ReceiverPosition]);
-                    % Db ! {createorupdate, ReceiverPosition};
+                {receiverPosition, ReceiverPosition} ->
+                    Db = whereis(receiverPositionDb),
+                    Db ! {create, ReceiverPosition};
                 {receiverStatus, _ReceiverStatus} ->
                     _Db = whereis(receiverStatusDb);
-                    % io:format("~p ~p~n", [Db, ReceiverStatus]);
                     % Db ! {createorupdate, ReceiverStatus};
                 nomatch -> 
-                    % io:format("Line parser nomatch ~p~n", [Line])
                     nomatch
             end
     end
