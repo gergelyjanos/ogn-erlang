@@ -22,6 +22,6 @@ count(SessionID, _Env, _Input) ->
     Count = receiverPositionDb:count(),
     mod_esi:deliver(SessionID, ?HEADER), 
     mod_esi:deliver(SessionID, [
-        io_lib:format("{count: ~p}", [Count])
+        io_lib:format("{\"count\": ~p}\r\n", [Count])
     ])
 .
