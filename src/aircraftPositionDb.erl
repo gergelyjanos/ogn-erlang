@@ -8,13 +8,15 @@
 -include("aircraftPositionRecord.hrl").
 
 start() ->
-    run()
+    Table = ets:new(aircraftPositionTable, [{keypos, #aircraftPosition.device}]),
+    run(Table)
 .
 
-run() ->
+run(Table) ->
     receive
         {create, Position} ->
-            io:format("Aircraft Db create ~p~n", [Position]),
+            Inserted = ets:insert(Table, Position),
+            io:format("Aircraft Db created ~p ~p~n", [Inserted, Position]),
             ok;
         {update, _Position} ->
             ok;
@@ -23,6 +25,6 @@ run() ->
         {readAll, _Filter} ->
             ok
     end,
-    run()
+    run(Table)
 .
 
