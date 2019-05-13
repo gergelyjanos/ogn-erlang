@@ -37,10 +37,10 @@ setup() ->
 test1(SessionID, _Env, _Input) -> 
     io:format("test1 request ~p~n", [SessionID]),
     mod_esi:deliver(SessionID, ["Content-Type: text/html\r\n\r\n"]),
-    mod_esi:deliver(SessionID, ["<html><body><h1>Hello OGN Erlang!</h1><p>", 
-        "<a href=""/api/aircraftpositionapi/list"">Aircraft position list</a><br/>",
-        "<a href=""/api/aircraftpositionapi/count"">Aircraft count</a><br/>",
-        "<a href=""/api/receiverpositionapi/list"">Receiver position list</a><br/>",
-        "<a href=""/api/receiverpositionapi/count"">Receiver count</a><br/>",
-        "</p></body></html>" ])
+    mod_esi:deliver(SessionID, ["<html><body><h1>Hello OGN Erlang!</h1><div><ul>", 
+        "<li><a href=""/api/aircraftpositionapi/list"">Aircraft position list</a></li>",
+        "<li><a href=""/api/aircraftpositionapi/count"">Aircraft count</a></li>",
+        "<li><a href=""/api/receiverpositionapi/list"">Receiver position list</a></li>",
+        "<li><a href=""/api/receiverpositionapi/count"">Receiver count</a></li>",
+        "</ul></div></body></html>" ])
 .

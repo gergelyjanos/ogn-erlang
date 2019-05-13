@@ -9,8 +9,11 @@ erl -pa ebin/ -run startup main
 ```
 
 ## Query data
-* List of aircrafts last position [http://localhost:8080/api/aircraftpositionapi/list](http://localhost:8080/api/aircraftpositionapi/list)
-* Number of detected aircrafts [http://localhost:8080/api/aircraftpositionapi/count](http://localhost:8080/api/aircraftpositionapi/count)
+* Welcome message with links [http://localhost:8080/api/httpserver/test1](http://localhost:8080/api/httpserver/test1)
+* List of aircraft's position [http://localhost:8080/api/aircraftpositionapi/list](http://localhost:8080/api/aircraftpositionapi/list)
+* Number of aircrafts [http://localhost:8080/api/aircraftpositionapi/count](http://localhost:8080/api/aircraftpositionapi/count)
+* List of receiver's position [http://localhost:8080/api/receiverpositionapi/list](http://localhost:8080/api/receiverpositionapi/list)
+* Number of receivers [http://localhost:8080/api/receiverpositionapi/count](http://localhost:8080/api/receiverpositionapi/count)
 
 ## Links
 * [Open Glider Network](http://wiki.glidernet.org/) *wiki page*
