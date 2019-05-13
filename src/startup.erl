@@ -15,8 +15,9 @@ stop(_State) ->
 
 main() ->
     AircraftPositionDb = spawn(aircraftPositionDb, start, []),
+    register(aircraftPositionDb, AircraftPositionDb),
 
-    Parser = spawn(parser, start, [AircraftPositionDb]),
+    Parser = spawn(parser, start, []),
     io:format("Parser Pid ~p~n", [Parser]),
 
     Client = spawn(aprsclient, start, [Parser]),

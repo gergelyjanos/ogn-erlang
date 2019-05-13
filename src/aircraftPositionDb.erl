@@ -13,13 +13,14 @@ start() ->
 
 run() ->
     receive
-        {create, position} ->
+        {create, Position} ->
+            io:format("Aircraft Db create ~p~n", [Position]),
             ok;
-        {update, position} ->
+        {update, _Position} ->
             ok;
-        {delete, position} ->
+        {delete, _Position} ->
             ok;
-        {readAll, filter} ->
+        {readAll, _Filter} ->
             ok
     end,
     run()

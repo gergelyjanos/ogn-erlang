@@ -4,7 +4,7 @@
 %% @version 1.0.0
 
 -module(parser).
--export([start/1]).
+-export([start/0]).
 -include("aircraftPositionRecord.hrl").
 -include("receiverPositionRecord.hrl").
 -include("receiverStatusRecord.hrl").
@@ -31,21 +31,22 @@
     }).
 
 %% @doc Public function to parse messages.
-start(AircraftPositionDb) ->
+start() ->
     Regexps = compileRegexp(),
-    run(Regexps, AircraftPositionDb)
+    run(Regexps)
 .
 
-run(Regexps, AircraftPositionDb)->
+run(Regexps)->
     receive 
         {close} -> 
             io:format("Close parser~n");
         {line, Line} -> 
-            parseline(Line, Regexps), 
-            run(Regexps, AircraftPositionDb);
+            LineParser = spawn(fun() -> parseline(Regexps) end),
+            LineParser ! Line,
+            run(Regexps);
         {comment, Comment} -> 
             parsecomment(Comment), 
-            run(Regexps, AircraftPositionDb)
+            run(Regexps)
     end
 .	
 
@@ -64,12 +65,25 @@ compileRegexp() ->
     }
 .
 
-parseline(Line, Regexps) -> 
-    case parseline(aircraft, string:chomp(Line), Regexps) of
-        {match, Data} ->
-            io:format("~p~n", [Data]);
-        nomatch -> 
-            io:format("Line parser nomatch ~p~n", [Line])
+parseline(Regexps) -> 
+    receive
+        Line ->
+            io:format("[~p] ~p~n", [self(), Line]),
+            case parseline(aircraft, string:chomp(Line), Regexps) of
+                {aircraftPosition, AircraftPosition} ->
+                    Db = whereis(aircraftPositionDb),
+                    Db ! {create, AircraftPosition};
+                {receiverPosition, ReceiverPosition} ->
+                    Db = whereis(receiverPositionDb),
+                    io:format("~p ~p~n", [Db, ReceiverPosition]);
+                    % Db ! {createorupdate, ReceiverPosition};
+                {receiverStatus, ReceiverStatus} ->
+                    Db = whereis(receiverStatusDb),
+                    io:format("~p ~p~n", [Db, ReceiverStatus]);
+                    % Db ! {createorupdate, ReceiverStatus};
+                nomatch -> 
+                    io:format("Line parser nomatch ~p~n", [Line])
+            end
     end
 .
 
@@ -93,8 +107,7 @@ parseline(aircraft, Line, Regexps) ->
                 climbRate = {list_to_integer(ClimbRate), fpm},
                 turnRate = {list_to_float(TurnRate), rot}
             },
-            % todo send aircraft data to DB
-            {match, AircraftPosition};
+            {aircraftPosition, AircraftPosition};
         nomatch ->
             parseline(receiverPosition, Line, Regexps)
     end
@@ -112,7 +125,7 @@ parseline(receiverPosition, Line, Regexps) ->
                 longitude = latlonParser(lon, Longitude),
                 altitude = {list_to_integer(Altitude), m}
             },
-            {match, ReceiverPosition};
+            {receiverPosition, ReceiverPosition};
         nomatch -> 
             parseline(receiverStatus, Line, Regexps)
     end
@@ -131,7 +144,7 @@ parseline(receiverStatus, Line, Regexps) ->
                 ram = Ram,
                 other = Other
             },
-            {match, ReceiverStatus};
+            {receiverStatus, ReceiverStatus};
         nomatch -> 
             nomatch
     end
