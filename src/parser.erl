@@ -1,5 +1,5 @@
 %% @author Janos Gergely <gergelyjanos@td1990.org>
-%% @doc Function to parse APRS messages
+%% @doc Module to parse APRS messages
 %% @copyright 2019 TD*1990
 %% @version 1.0.0
 

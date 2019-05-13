@@ -1,5 +1,5 @@
 %% @author Janos Gergely <gergelyjanos@td1990.org>
-%% @doc Function to CRUD in DB aircraft position data
+%% @doc Module to CRUD in DB aircraft position data
 %% @copyright 2019 TD*1990
 %% @version 1.0.0
 
@@ -28,3 +28,4 @@ run(Table) ->
     run(Table)
 .
 
+    

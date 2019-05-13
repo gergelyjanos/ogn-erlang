@@ -1,5 +1,5 @@
 %% @author Janos Gergely <gergelyjanos@td1990.org>
-%% @doc Function to receive APRS beacons from tcp socket
+%% @doc Module to receive APRS beacons from tcp socket
 %% @copyright 2019 TD*1990
 %% @version 1.0.0
 
