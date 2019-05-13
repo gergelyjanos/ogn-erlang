@@ -27,13 +27,13 @@ setup() ->
             {document_root, "C://temp//http//ogn"},
             {erl_script_alias, {"/api", [httpserver, aircraftpositionapi]}},
             {erl_script_nocache, true},
-            {mime_types, [{"html","text/html"}]}
+            {mime_types, [{"html","text/html"}, {"json", "application/json"}]}
         ]
     ),
     io:format("httpd ~p ~p~n", [Pid, httpd:info(Pid)])
 .
 
-% http://localhost:8080/aircraft/httpserver/test1
+% http://localhost:8080/api/httpserver/test1
 test1(SessionID, _Env, _Input) -> 
     io:format("test1 request ~p~n", [SessionID]),
     mod_esi:deliver(SessionID, ["Content-Type: text/html\r\n\r\n", "<html><body><h1>Hello World!</h1><p><a href=""/api/aircraftpositionapi/list"">Aircraft position list</a></p></body></html>" ])

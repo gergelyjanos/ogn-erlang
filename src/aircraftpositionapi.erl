@@ -4,13 +4,24 @@
 %% @version 1.0.0
 
 -module(aircraftpositionapi).
--export([list/3]).
+-export([list/3, count/3]).
+
+-define(HEADER, ["Content-Type: application/json\r\n\r\n"]).
 
 % http://localhost:8080/api/aircraftpositionapi/list
 list(SessionID, _Env, _Input) -> 
-    % DbList = "akarmi", % aircraftPositionDb:list(),
-    % io:format("api ~p~n", DbList),
-    mod_esi:deliver(SessionID, ["Content-Type: text/html\r\n\r\n", "<html><body><pre>akarmi</pre></body></html>" ])
+    DbList = aircraftPositionDb:list(),
+    mod_esi:deliver(SessionID, ?HEADER), 
+    mod_esi:deliver(SessionID, [
+        io_lib:format("~p", [DbList])
+    ])
 .
 
-
+% http://localhost:8080/api/aircraftpositionapi/count
+count(SessionID, _Env, _Input) -> 
+    Count = aircraftPositionDb:count(),
+    mod_esi:deliver(SessionID, ?HEADER), 
+    mod_esi:deliver(SessionID, [
+        io_lib:format("{count: ~p}", [Count])
+    ])
+.
