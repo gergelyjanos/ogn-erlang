@@ -4,8 +4,10 @@
 %% @version 1.0.0
 
 -module(parser).
--export([start/0]).
--include("parser_records.hrl").
+-export([start/1]).
+-include("aircraftPositionRecord.hrl").
+-include("receiverPositionRecord.hrl").
+-include("receiverStatusRecord.hrl").
 
 -define(aircraftData, Device, MessageFormat, Receiver, Timestamp, Latitude, Longitude, Heading, GroundSpeed, Altitude, Comment).
 -define(aircraftAdditionalData, DeviceId, ClimbRate, TurnRate).
@@ -29,21 +31,21 @@
     }).
 
 %% @doc Public function to parse messages.
-start() ->
+start(AircraftPositionDb) ->
     Regexps = compileRegexp(),
-    run(Regexps)
+    run(Regexps, AircraftPositionDb)
 .
 
-run(Regexps)->
+run(Regexps, AircraftPositionDb)->
     receive 
         {close} -> 
             io:format("Close parser~n");
         {line, Line} -> 
             parseline(Line, Regexps), 
-            run(Regexps);
+            run(Regexps, AircraftPositionDb);
         {comment, Comment} -> 
             parsecomment(Comment), 
-            run(Regexps)
+            run(Regexps, AircraftPositionDb)
     end
 .	
 
