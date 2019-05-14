@@ -100,7 +100,7 @@ parseline(aircraft, Line, Regexps) ->
                 longitude = latlonParser(lon, Longitude),
                 heading = {list_to_integer(Heading), d},
                 groundSpeed = {list_to_integer(GroundSpeed), kmph},
-                altitude = {list_to_integer(Altitude), m},
+                altitude = {list_to_integer(Altitude), f},
                 deviceId = DeviceId,
                 climbRate = {list_to_integer(ClimbRate), fpm},
                 turnRate = {list_to_float(TurnRate), rot}
@@ -160,8 +160,9 @@ parseAircraftAdditionalData(Comment, Regexps) ->
 
 
 %% @doc Private function to parse comment.
-parsecomment(Comment) ->
-	io:format("Comment parser ~p~n", [Comment])
+parsecomment(_Comment) ->
+    ok
+	% io:format("Comment parser ~p~n", [Comment])
 .	
 
 timestampToDateTime(Timestamp, Regexps) ->

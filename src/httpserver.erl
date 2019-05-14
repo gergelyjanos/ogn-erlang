@@ -5,6 +5,7 @@
 
 -module(httpserver).
 -export([start/0, test1/3]).
+-include("macros.hrl").
 
 start() ->
     setup(),
@@ -35,7 +36,7 @@ setup() ->
 
 % http://localhost:8080/api/httpserver/test1
 test1(SessionID, _Env, _Input) -> 
-    io:format("test1 request ~p~n", [SessionID]),
+    ?HTTPRequestLog(SessionID),
     mod_esi:deliver(SessionID, ["Content-Type: text/html\r\n\r\n"]),
     mod_esi:deliver(SessionID, ["<html><body><h1>Hello OGN Erlang!</h1><div><ul>", 
         "<li><a href=""/api/aircraftpositionapi/list"">Aircraft position list</a></li>",
