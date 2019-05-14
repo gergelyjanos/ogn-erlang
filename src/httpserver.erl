@@ -24,8 +24,8 @@ setup() ->
             {port, 8080},
             % {bind_address, "localhost"},
             {server_name, "ogn"},
-            {server_root, "C://temp//http//ogn"},
-            {document_root, "C://temp//http//ogn"},
+            {server_root, "."},
+            {document_root, "."},
             {erl_script_alias, {"/api", [httpserver, aircraftpositionapi, receiverpositionapi]}},
             {erl_script_nocache, true},
             {mime_types, [{"html","text/html"}, {"json", "application/json"}]}
