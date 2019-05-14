@@ -121,7 +121,7 @@ parseline(receiverPosition, Line, Regexps) ->
                 time = timestampToDateTime(Timestamp, Regexps),
                 latitude = latlonParser(lat, Latitude),
                 longitude = latlonParser(lon, Longitude),
-                altitude = {list_to_integer(Altitude), m}
+                altitude = {list_to_integer(Altitude), f}
             },
             {receiverPosition, ReceiverPosition};
         nomatch -> 

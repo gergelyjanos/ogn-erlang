@@ -4,7 +4,7 @@
 %% @version 1.0.0
 
 -module(receiverpositionapi).
--export([list/3, count/3]).
+-export([list/3, count/3, receiver/3]).
 -include("macros.hrl").
 -include("receiverPositionRecord.hrl").
 
@@ -23,4 +23,10 @@ count(SessionID, _Env, _Input) ->
     ?HTTPRequestLog(SessionID),
     mod_esi:deliver(SessionID, ?HEADER), 
     mod_esi:deliver(SessionID, [json:integerToJson("count", receiverPositionDb:count())])
+.
+
+receiver(SessionID, _Env, Input) -> 
+    ?HTTPRequestLog(SessionID),
+    mod_esi:deliver(SessionID, ?HEADER), 
+    mod_esi:deliver(SessionID, [json:listOfRecordsToJson(record_info(fields, receiverPosition), receiverPositionDb:receiver(Input))])
 .

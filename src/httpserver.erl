@@ -43,5 +43,6 @@ test1(SessionID, _Env, _Input) ->
         "<li><a href=""/api/aircraftpositionapi/count"">Aircraft count</a></li>",
         "<li><a href=""/api/receiverpositionapi/list"">Receiver position list</a></li>",
         "<li><a href=""/api/receiverpositionapi/count"">Receiver count</a></li>",
+        "<li><a href=""/api/receiverpositionapi/receiver/NkovJ7"">NkovJ7 receiver position</a></li>",
         "</ul></div></body></html>" ])
 .

@@ -4,7 +4,7 @@
 %% @version 1.0.0
 
 -module(receiverPositionDb).
--export([start/0, list/0, count/0]).
+-export([start/0, list/0, count/0, receiver/1]).
 -include("receiverPositionRecord.hrl").
 
 start() ->
@@ -28,3 +28,8 @@ list() ->
 count() ->
     length(ets:tab2list(receiverPositionTable))
 .
+
+receiver(Receiver) ->
+    ets:lookup(receiverPositionTable, Receiver)
+.
+
