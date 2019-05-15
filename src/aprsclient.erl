@@ -70,8 +70,8 @@ runpassivemode(Socket, Parser, Counter) ->
     end,
 
 	if 
-		Counter rem 1000 ->
-			io:format("Socket reads ~pk~n", [Counter / 1000]);
+		Counter rem 1000 == 0 ->
+			io:format("Socket reads ~pk~n", [Counter div 1000]);
 		true ->
 			ok
 	end,
