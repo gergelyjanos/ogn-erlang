@@ -9,22 +9,44 @@
 -define(AprsPort, 10152).
 -define(AprsHost, "aprs.glidernet.org").
 -define(LoginMessage, "user td1990 pass -1 vers ogn_erlang 1.0.0\r\n").
--define(ConnectOptions,	[binary, {active, false}, {packet, line}, {delay_send, false}, {nodelay, true}]).
+-define(PassivemodeConnectOptions,	[binary, {active, false}, {packet, line}, {delay_send, false}, {nodelay, true}]).
+-define(ActivemodeConnectOptions,	[binary, {active, true}, {packet, line}, {delay_send, false}, {nodelay, true}]).
+-define(Timeout, 20000).
+-define(ReconnectSleep, 10000).
 
 %% @doc Public function to run the TCP reader for read lines from socket and send to parser.
 start(Parser) ->
-    {ok, Socket} = gen_tcp:connect(?AprsHost, ?AprsPort, ?ConnectOptions),
-    io:format("Socket connected: ~p~n", [Socket]),
-    {ok, ServerName} = gen_tcp:recv(Socket, 0),
-    io:format("Received ServerName: ~p~n", [ServerName]),
-    ok = gen_tcp:send(Socket, ?LoginMessage),
-    io:format("Logged in: ~p~n", [?LoginMessage]),
-    runpassivemode(Socket, Parser)
+    runpassivemode(connect(), Parser, 0)
+.
+
+connect() ->
+	connect(true)
+.
+
+connect(First) ->
+    case gen_tcp:connect(?AprsHost, ?AprsPort, ?PassivemodeConnectOptions, ?Timeout) of
+		{ok, Socket} ->
+			io:format("Socket connected: ~p~n", [Socket]),
+			{ok, ServerName} = gen_tcp:recv(Socket, 0),
+			io:format("Received ServerName: ~p~n", [ServerName]),
+			ok = gen_tcp:send(Socket, ?LoginMessage),
+			io:format("Logged in: ~p~n", [?LoginMessage]),
+			Socket;
+		{error, Reason} ->
+			if 
+				First == true -> 	
+					io:format("Socket connect error: ~p~n", [Reason]);
+				First == false ->
+					ok
+			end,
+			timer:sleep(?ReconnectSleep),
+			connect(false)
+	end
 .
 
 %% @doc Private function to read lines for ever and send to the parser.
-runpassivemode(Socket, Parser) ->
-    Result = case gen_tcp:recv(Socket, 0, 50000) of
+runpassivemode(Socket, Parser, Counter) ->
+    Socket2 = case gen_tcp:recv(Socket, 0, ?Timeout) of
 	    {ok, Line} ->
 			Comment = string:prefix(Line, "#"),
 			if 
@@ -33,27 +55,75 @@ runpassivemode(Socket, Parser) ->
 				true -> 
 					sendkeepalive(Socket),
 					Parser ! {comment, Comment}
-			end;
+			end,
+			Socket;
     	{error, timeout} ->
 			io:format("Socket timedout: ~n"),
-			sendkeepalive(Socket);
+			sendkeepalive(Socket),
+			Socket;
 		{error, closed} -> 
 			io:format("Socket closed~n"),
-			Parser ! {close},
-			stopRuning;
+			connect();
 		{error, Reason} ->
-			io:format("Socket error ~p~n", [Reason])
+			io:format("Socket error ~p~n", [Reason]),
+			Socket
     end,
+
 	if 
-		Result == stopRuning ->
-			socketClosed;
-		true->	
-			runpassivemode(Socket, Parser)
-	end
+		Counter rem 1000 ->
+			io:format("Socket reads ~pk~n", [Counter / 1000]);
+		true ->
+			ok
+	end,
+
+	runpassivemode(Socket2, Parser, Counter + 1)
 .
 
 %% @doc Private function to send #keepalive message to the server.
 sendkeepalive(Socket) ->
     gen_tcp:send(Socket, "#keepalive")
 .
+
+% runactivemode(connected, Parser) ->
+% 	receive
+% 		{tcp, Socket, Line} ->
+% 		    io:format("Received ServerName: ~p~n", [Line]),
+% 		    ok = gen_tcp:send(Socket, ?LoginMessage),
+%     		io:format("Logged in: ~p~n", [?LoginMessage]),
+% 			runactivemode(loggedin, Parser);
+% 		{tcp_closed, Socket} ->
+% 			io:format("Socket closed~n"),
+% 			connect(),
+% 			runactivemode(connected, Parser);
+% 		{tcp_error, Socket, Reason} ->
+% 			io:format("Socket error ~p~n", [Reason])
+% 	end
+% ;
+% runactivemode(loggedin, Parser) ->
+% 	receive
+% 		{tcp, Socket, Line} ->
+% 			Comment = string:prefix(Line, "#"),
+% 			if 
+% 				Comment == nomatch -> 
+% 					Parser ! {line, Line};
+% 				true -> 
+% 					sendkeepalive(Socket),
+% 					Parser ! {comment, Comment}
+% 			end;
+% 			runactivemode(loggedin, Parser);
+% 		{tcp_closed, Socket} ->
+% 			io:format("Socket closed~n"),
+% 			connect(),
+% 			runactivemode(connected, Parser);
+% 		{tcp_error, Socket, Reason} ->
+% 			io:format("Socket error ~p~n", [Reason])
+% 	end
+
+% .
+
+% connect() ->
+%     {ok, Socket} = gen_tcp:connect(?AprsHost, ?AprsPort, ?ActivemodeConnectOptions),
+%     io:format("Socket connected: ~p~n", [Socket]),
+% 	connected
+% .
 
