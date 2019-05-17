@@ -38,11 +38,15 @@ setup() ->
 test1(SessionID, _Env, _Input) -> 
     ?HTTPRequestLog(SessionID),
     mod_esi:deliver(SessionID, ["Content-Type: text/html\r\n\r\n"]),
-    mod_esi:deliver(SessionID, ["<html><body><h1>Hello OGN Erlang!</h1><div><ul>", 
-        "<li><a href=""/api/aircraftpositionapi/list"">Aircraft position list</a></li>",
+    mod_esi:deliver(SessionID, [
+        "<html><body><h1>Hello OGN Erlang!</h1>",
+        "<div><ul>", 
+        io_lib:format("<li><a href=""/api/aircraftpositionapi/list"">Aircraft position list [~p]</a></li>", [aircraftPositionDb:count()]),
         "<li><a href=""/api/aircraftpositionapi/count"">Aircraft count</a></li>",
-        "<li><a href=""/api/receiverpositionapi/list"">Receiver position list</a></li>",
+        io_lib:format("<li><a href=""/api/receiverpositionapi/list"">Receiver position list [~p]</a></li>", [receiverPositionDb:count()]),
         "<li><a href=""/api/receiverpositionapi/count"">Receiver count</a></li>",
         "<li><a href=""/api/receiverpositionapi/receiver/NkovJ7"">NkovJ7 receiver position</a></li>",
-        "</ul></div></body></html>" ])
+        "</ul></div>",
+        "</body></html>" 
+    ])
 .
