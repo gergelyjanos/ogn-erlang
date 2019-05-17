@@ -33,20 +33,25 @@
 %% @doc Public function to parse messages.
 start() ->
     Regexps = compileRegexp(),
-    run(Regexps)
+    LineParsers = [
+        {aircraftPosition, Regexps#regexps.aircraft}, 
+        {receiverPosition, Regexps#regexps.receiverPosition}, 
+        {receiverStatus, Regexps#regexps.receiverStatus},
+        nomore
+    ],
+    run(Regexps, LineParsers)
 .
 
-run(Regexps)->
+run(Regexps, LineParsers)->
     receive 
         {close} -> 
             io:format("Close parser~n");
         {line, Line} -> 
-            LineParser = spawn(fun() -> parseline(Regexps) end),
-            LineParser ! Line,
-            run(Regexps);
+            spawn(fun() -> parseline(Regexps, LineParsers, string:chomp(Line)) end),
+            run(Regexps, LineParsers);
         {comment, Comment} -> 
             parsecomment(Comment), 
-            run(Regexps)
+            run(Regexps, LineParsers)
     end
 .	
 
@@ -65,29 +70,8 @@ compileRegexp() ->
     }
 .
 
-parseline(Regexps) -> 
-    receive
-        Line ->
-            % io:format("[~p] ~p~n", [self(), Line]),
-            case parseline(aircraft, string:chomp(Line), Regexps) of
-                {aircraftPosition, AircraftPosition} ->
-                    Db = whereis(aircraftPositionDb),
-                    Db ! {create, AircraftPosition};
-                {receiverPosition, ReceiverPosition} ->
-                    Db = whereis(receiverPositionDb),
-                    Db ! {create, ReceiverPosition};
-                {receiverStatus, _ReceiverStatus} ->
-                    _Db = whereis(receiverStatusDb);
-                    % Db ! {createorupdate, ReceiverStatus};
-                nomatch -> 
-                    nomatch
-            end
-    end
-.
-
 %% @doc Private function to parse line.
-parseline(aircraft, Line, Regexps) ->
-    Regex = Regexps#regexps.aircraft,
+parseline(Regexps, [{aircraftPosition, Regex} | LineParsers], Line) ->
     case re:run(Line, Regex, [{capture, all_but_first, list}]) of 
         {match, [?aircraftData]} ->
             [?aircraftAdditionalData] = parseAircraftAdditionalData(Comment, Regexps),
@@ -105,13 +89,12 @@ parseline(aircraft, Line, Regexps) ->
                 climbRate = {list_to_integer(ClimbRate), fpm},
                 turnRate = {list_to_float(TurnRate), rot}
             },
-            {aircraftPosition, AircraftPosition};
+            whereis(aircraftPositionDb) ! {create, AircraftPosition};
         nomatch ->
-            parseline(receiverPosition, Line, Regexps)
+            parseline(Regexps, LineParsers, Line)
     end
 ;
-parseline(receiverPosition, Line, Regexps) ->
-    Regex = Regexps#regexps.receiverPosition,
+parseline(Regexps, [{receiverPosition, Regex} | LineParsers], Line) ->
     case re:run(Line, Regex, [{capture, all_but_first, list}]) of 
         {match, [?receiverPosition]} ->
             ReceiverPosition = #receiverPosition{
@@ -123,13 +106,12 @@ parseline(receiverPosition, Line, Regexps) ->
                 longitude = latlonParser(lon, Longitude),
                 altitude = {list_to_integer(Altitude), f}
             },
-            {receiverPosition, ReceiverPosition};
+            whereis(receiverPositionDb) ! {create, ReceiverPosition};
         nomatch -> 
-            parseline(receiverStatus, Line, Regexps)
+            parseline(Regexps, LineParsers, Line)
     end
 ;
-parseline(receiverStatus, Line, Regexps) ->
-    Regex = Regexps#regexps.receiverStatus,
+parseline(Regexps, [{receiverStatus, Regex} | LineParsers], Line) ->
     case re:run(Line, Regex, [{capture, all_but_first, list}]) of 
         {match, [?receiverStatus]} ->
             ReceiverStatus = #receiverStatus{
@@ -144,8 +126,11 @@ parseline(receiverStatus, Line, Regexps) ->
             },
             {receiverStatus, ReceiverStatus};
         nomatch -> 
-            nomatch
+            parseline(Regexps, LineParsers, Line)
     end
+;
+parseline(_, [nomore | _], _) ->
+    nomatch
 .
 
 parseAircraftAdditionalData(Comment, Regexps) ->
