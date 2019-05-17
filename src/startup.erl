@@ -14,6 +14,9 @@ stop(_State) ->
     ok.
 
 main() ->
+    SystemInfoDb = systemInfoDb:start(),
+    io:format("SystemInfoDb Pid ~p~n", [SystemInfoDb]),
+
     HttpServer = spawn(httpserver, start, []),
     register(httpserver, HttpServer),
     io:format("HttpServer Pid ~p~n", [HttpServer]),
@@ -32,5 +35,6 @@ main() ->
     Client = spawn(aprsclient, start, [Parser]),
     io:format("Client Pid ~p~n", [Client]),
 
+    systemInfoDb:create("appStarted", "all process started"),
     io:read("running?")
 .

@@ -26,15 +26,18 @@ connect() ->
 connect(First) ->
     case gen_tcp:connect(?AprsHost, ?AprsPort, ?PassivemodeConnectOptions, ?Timeout) of
 		{ok, Socket} ->
+			systemInfoDb:create("socketConnected", Socket),
 			io:format("Socket connected: ~p~n", [Socket]),
 			{ok, ServerName} = gen_tcp:recv(Socket, 0),
 			io:format("Received ServerName: ~p~n", [ServerName]),
 			ok = gen_tcp:send(Socket, ?LoginMessage),
 			io:format("Logged in: ~p~n", [?LoginMessage]),
+			systemInfoDb:create("socketLoggedIn", ?LoginMessage),
 			Socket;
 		{error, Reason} ->
 			if 
 				First == true -> 	
+					systemInfoDb:create("socketError", Reason),
 					io:format("Socket connect error: ~p~n", [Reason]);
 				First == false ->
 					ok
@@ -62,15 +65,18 @@ runpassivemode(Socket, Parser, Counter) ->
 			sendkeepalive(Socket),
 			Socket;
 		{error, closed} -> 
+			systemInfoDb:create("socketClosed", ""),
 			io:format("Socket closed~n"),
 			connect();
 		{error, Reason} ->
+			systemInfoDb:create("socketError", Reason),
 			io:format("Socket error ~p~n", [Reason]),
 			Socket
     end,
 
 	if 
 		Counter rem 1000 == 0 ->
+			systemInfoDb:create("socketReadLine", Counter),
 			io:format("Socket reads ~pk~n", [Counter div 1000]);
 		true ->
 			ok
