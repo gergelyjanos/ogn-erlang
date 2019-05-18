@@ -4,17 +4,22 @@
 %% @version 1.0.0
 
 -module(systemInfoDb).
--export([start/0, list/0, count/0, create/2, run/0]).
+-export([start/0, list/0, count/0, create/3, spawnandstart/0]).
 -include("systemInfoRecord.hrl").
 -define(SELF, whereis(systeminfodb)).
 
-start() ->
-    ets:new(systemInfoTable, [named_table, {keypos, #systemInfo.id}]),
-    SystemInfoDb = spawn(systemInfoDb, run, []),
+spawnandstart() ->
+    SystemInfoDb = spawn(systemInfoDb, start, []),
     io:format("Sysinfo pid ~p~n", [SystemInfoDb]),
     R = register(systeminfodb, SystemInfoDb),
     io:format("Sysinfo pid reg ~p~n", [R]),
+    create(dbstarted, [], "DB started"),
     SystemInfoDb
+.
+
+start() ->
+    ets:new(systemInfoTable, [named_table, {keypos, #systemInfo.infoType}]),
+    run()
 .
 
 run() ->
@@ -26,17 +31,30 @@ run() ->
     run()
 .
 
-create(_MessageType, _Message) ->
-    ok
-    % Rec = #systemInfo{ 
-    %     id = 0, % todo autoinc
-    %     createdAt = calendar:universal_time(), 
-    %     messageType = MessageType,
-    %     message = Message
-    % },
-    % P = whereis(systeminfodb),
-    % io:format("Sysinfo pid ~p~n", [P]),
-    % P ! {create, Rec}
+% create(socketConnected) ->
+%     create(socketConnected, [], "Socket connected ")
+% ;
+% create(socketLoggedIn, {LoginMessage}) ->
+%     create(socketLoggedIn, [], LoginMessage)
+% ;
+% create(socketError, {Reason}) ->
+%     create(socketError, [], Reason)
+% ;
+% create(socketClosed, {_}) ->
+%     create(socketClosed, [], "Socket closed")
+% ;
+% create(socketReadLine, {Count}) ->
+%     create(socketReadLine, Count, "APRS Line counter")
+% .
+
+create(InfoType, Datas, Message) ->
+    Rec = #systemInfo{ 
+        infoType = InfoType,
+        time = calendar:universal_time(), 
+        datas = Datas,
+        message = Message
+    },
+    whereis(systeminfodb) ! {create, Rec}
 .
 
 list() ->

@@ -26,7 +26,13 @@ setup() ->
             {server_name, "ogn"},
             {server_root, "."},
             {document_root, "."},
-            {erl_script_alias, {"/api", [httpserver, aircraftpositionapi, receiverpositionapi]}},
+            {erl_script_alias, {"/api", 
+                [
+                    httpserver, 
+                    aircraftpositionapi, 
+                    receiverpositionapi,
+                    systeminfoapi
+                ]}},
             {erl_script_nocache, true},
             {mime_types, [{"html","text/html"}, {"json", "application/json"}]}
         ]
@@ -46,6 +52,7 @@ test1(SessionID, _Env, _Input) ->
         io_lib:format("<li><a href=""/api/receiverpositionapi/list"">Receiver position list [~p]</a></li>", [receiverPositionDb:count()]),
         "<li><a href=""/api/receiverpositionapi/count"">Receiver count</a></li>",
         "<li><a href=""/api/receiverpositionapi/receiver/NkovJ7"">NkovJ7 receiver position</a></li>",
+        "<li><a href=""/api/systeminfoapi/list"">System Info</a></li>",
         "</ul></div>",
         "</body></html>" 
     ])

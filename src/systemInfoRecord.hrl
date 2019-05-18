@@ -5,8 +5,8 @@
 
 -record(systemInfo, 
     {
-        id,
-        createdAt, 
-        messageType, 
+        infoType,
+        time, 
+        datas, 
         message
     }).
