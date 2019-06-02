@@ -27,18 +27,19 @@ connect(First) ->
     case gen_tcp:connect(?AprsHost, ?AprsPort, ?PassivemodeConnectOptions, ?Timeout) of
 		{ok, Socket} ->
 			systemInfoDb:create(socketConnected, [], "Socket connected"),
-			io:format("Socket connected: ~p~n", [Socket]),
+			% io:format("Socket connected: ~p~n", [Socket]),
 			{ok, ServerName} = gen_tcp:recv(Socket, 0),
-			io:format("Received ServerName: ~p~n", [ServerName]),
+			systemInfoDb:create(serverName, [], ServerName),
+			% io:format("Received ServerName: ~p~n", [ServerName]),
 			ok = gen_tcp:send(Socket, ?LoginMessage),
-			io:format("Logged in: ~p~n", [?LoginMessage]),
+			% io:format("Logged in: ~p~n", [?LoginMessage]),
 			systemInfoDb:create(socketLoggedIn, [], ?LoginMessage),
 			Socket;
 		{error, Reason} ->
 			if 
 				First == true -> 	
-					systemInfoDb:create(socketError, [], Reason),
-					io:format("Socket connect error: ~p~n", [Reason]);
+					systemInfoDb:create(socketError, [], Reason);
+					% io:format("Socket connect error: ~p~n", [Reason]);
 				First == false ->
 					ok
 			end,
@@ -59,22 +60,21 @@ runpassivemode(Socket, Parser, Counter) ->
 					sendkeepalive(Socket),
 					Parser ! {comment, Comment}
 			end,
+			systemInfoDb:create(socketReadLine, Counter, "socket read counter"),
 			Socket;
     	{error, timeout} ->
-			io:format("Socket timedout: ~n"),
-			sendkeepalive(Socket),
-			Socket;
+			% io:format("Socket timedout: ~n"),
+			connect();
 		{error, closed} -> 
 			systemInfoDb:create(socketClosed, [], "Socket closed"),
-			io:format("Socket closed~n"),
+			% io:format("Socket closed~n"),
 			connect();
 		{error, Reason} ->
 			systemInfoDb:create(socketError, [], Reason),
-			io:format("Socket error ~p~n", [Reason]),
-			Socket
+			% io:format("Socket error ~p~n", [Reason]),
+			connect()
     end,
 
-	systemInfoDb:create(socketReadLine, Counter, "socket read counter"),
 	runpassivemode(Socket2, Parser, Counter + 1)
 .
 
