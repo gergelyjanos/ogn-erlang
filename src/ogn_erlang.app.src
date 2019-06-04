@@ -2,7 +2,7 @@
     application, 
     ogn_erlang, 
     [
-        {desctription, "OGN collector in Erlang"},
+        {description, "OGN collector in Erlang"},
         {vsn, "1.0.0"},
         {modules, [
             aircraftpositionapi,

@@ -34,6 +34,6 @@ main() ->
 
     Client = spawn(aprsclient, start, [Parser]),
     io:format("Client Pid ~p~n", [Client]),
-
+    % {ok, null}
     io:read("running?")
 .
