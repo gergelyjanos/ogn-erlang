@@ -1,0 +1,10 @@
+{
+    release, 
+    {"OGN erlang R1", "1.0.0"}, 
+    {erts, "10.3"},
+    [
+        {kernel, "6.3"},
+        {stdlib, "3.8"},
+        {ogn_erlang, "1.0.0"}
+    ]
+}.

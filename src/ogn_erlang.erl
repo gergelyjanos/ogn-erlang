@@ -3,7 +3,7 @@
 %% @copyright 2019 TD*1990
 %% @version 1.0.0
 
--module(startup).
+-module(ogn_erlang).
 -behavior(application).
 -export([start/2, stop/1, main/0]).
 

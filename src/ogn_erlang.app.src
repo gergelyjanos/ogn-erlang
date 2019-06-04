@@ -1,0 +1,32 @@
+{
+    application, 
+    ogn_erlang, 
+    [
+        {desctription, "OGN collector in Erlang"},
+        {vsn, "1.0.0"},
+        {modules, [
+            aircraftpositionapi,
+            aircraftPositionDb,
+            aprsclient,
+            deployhelper,
+            httpserver,
+            json,
+            parser,
+            receiverpositionapi,
+            receiverPositionDb,
+            startup,
+            systeminfoapi,
+            systeminfoDb
+            ]
+        },
+        {registered, [
+            httpserver,
+            aircraftPositionDb,
+            receiverPositionDb,
+            systeminfodb]
+        },
+        {applications, [kernel, stdlib ]},
+        {mod, {ogn_erlang, []}}
+    ]
+}
+.
