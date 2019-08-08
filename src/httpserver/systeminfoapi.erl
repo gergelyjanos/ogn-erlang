@@ -5,7 +5,7 @@
 
 -module(systeminfoapi).
 -export([list/3]).
--include("../macros.hrl").
+-include("macros.hrl").
 -include("../systemInfoRecord.hrl").
 
 

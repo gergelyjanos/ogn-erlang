@@ -5,7 +5,7 @@
 
 -module(httpserver).
 -export([start/0, test1/3]).
--include("../macros.hrl").
+-include("macros.hrl").
 
 start() ->
     setup(),

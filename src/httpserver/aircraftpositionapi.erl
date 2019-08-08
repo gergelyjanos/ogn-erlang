@@ -5,7 +5,7 @@
 
 -module(aircraftpositionapi).
 -export([list/3, count/3]).
--include("../macros.hrl").
+-include("macros.hrl").
 -include("../aircraftPositionRecord.hrl").
 
 -define(HEADER, ["Content-Type: application/json\r\n\r\n"]).
