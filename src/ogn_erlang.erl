@@ -1,11 +1,11 @@
-%% @author Janos Gergely <gergelyjanos@td1990.org>
-%% @doc Module to startup the OGN converter
-%% @copyright 2019 TD*1990
-%% @version 1.0.0
+%%%--------------------------------------------------------------------- 
+%%% TD*1990
+%%%--------------------------------------------------------------------- 
 
 -module(ogn_erlang).
+
 -behavior(application).
--export([start/2, stop/1, main/0]).
+-export([start/2, stop/1]).
 
 start(_Type, _Args) ->
     main(),

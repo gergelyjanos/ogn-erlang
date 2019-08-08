@@ -5,8 +5,8 @@
 
 -module(systeminfoapi).
 -export([list/3]).
--include("macros.hrl").
--include("systemInfoRecord.hrl").
+-include("../macros.hrl").
+-include("../systemInfoRecord.hrl").
 
 
 % http://localhost:8080/api/systeminfoapi/list
