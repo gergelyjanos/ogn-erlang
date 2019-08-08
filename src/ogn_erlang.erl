@@ -8,7 +8,8 @@
 -export([start/2, stop/1, main/0]).
 
 start(_Type, _Args) ->
-    main().
+    main(),
+    {ok, self()}.
 
 stop(_State) ->
     ok.
