@@ -12,13 +12,13 @@
 -record(state, {listen}).
 
 start() ->
-   gen_server:start(?MODULE).
+   start_link().
 
 stop() ->
    gen_server:call(?MODULE, stop).
 
 start_link() ->
-   gen_server:start_link(?MODULE, [], []).
+   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init(_Args) ->
    Inet = inets:start(),
