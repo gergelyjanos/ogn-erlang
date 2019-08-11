@@ -3,7 +3,7 @@
 %% @copyright 2019 TD*1990
 %% @version 1.0.0
 
--module(aprsclient).
+-module(aprs_client).
 -export([start/1]).
 
 -define(AprsPort, 10152).
@@ -16,12 +16,10 @@
 
 %% @doc Public function to run the TCP reader for read lines from socket and send to parser.
 start(Parser) ->
-    runpassivemode(connect(), Parser, 0)
-.
+    runpassivemode(connect(), Parser, 0).
 
 connect() ->
-	connect(true)
-.
+	connect(true).
 
 connect(First) ->
     case gen_tcp:connect(?AprsHost, ?AprsPort, ?PassivemodeConnectOptions, ?Timeout) of
@@ -45,8 +43,7 @@ connect(First) ->
 			end,
 			timer:sleep(?ReconnectSleep),
 			connect(false)
-	end
-.
+	end.
 
 %% @doc Private function to read lines for ever and send to the parser.
 runpassivemode(Socket, Parser, Counter) ->

@@ -9,7 +9,8 @@
             ogn_sup,
             http_server_sup,
             http_server_server,
-            web
+            web,
+            aprs_client_server
             % aircraftpositionapi,
             % aircraftPositionDb,
             % aprsclient,
@@ -28,7 +29,8 @@
             ogn_sup,
             http_server_sup,
             http_server_server,
-            web
+            web,
+            aprs_client_server
             % httpserver,
             % aircraftPositionDb,
             % receiverPositionDb,
