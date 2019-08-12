@@ -28,13 +28,7 @@ init(_Args) ->
     {ok, #state{}, {continue, connect}}.
 
 handle_continue(connect, State) ->
-    case gen_tcp:connect(?AprsHost, ?AprsPort, ?PassivemodeConnectOptions, ?Timeout) of
-		{ok, Socket} ->
-			io:format("Socket connected: ~p~n", [Socket]),
-            {noreply, State#state{socket=Socket, line_count=0}, {continue, login}};
-		{error, Reason} ->
-            {stop, Reason, State}
-	end;
+    process_connect(gen_tcp:connect(?AprsHost, ?AprsPort, ?PassivemodeConnectOptions, ?Timeout), State);
 
 handle_continue(login, State=#state{socket=Socket}) ->
     {ok, ServerName} = gen_tcp:recv(Socket, 0),
@@ -42,28 +36,8 @@ handle_continue(login, State=#state{socket=Socket}) ->
     ok = gen_tcp:send(Socket, ?LoginMessage),
     {noreply, State, {continue, run}};
 
-handle_continue(run, #state{socket=Socket, line_count=LineCount}=State) ->
-    case gen_tcp:recv(Socket, 0, ?Timeout) of
-	    {ok, Line} -> 
-            io:format("~p~n", [Line]),
-			% Comment = string:prefix(Line, "#"),
-			% if 
-			% 	Comment == nomatch -> 
-			% 		Parser ! {line, Line};
-			% 	true -> 
-			% 		sendkeepalive(Socket),
-			% 		Parser ! {comment, Comment}
-			% end,
-            {noreply, State#state{line_count = LineCount+1}, {continue, run}};
-    	{error, timeout} -> 
-            {stop, timeout, State};
-
-		{error, closed} -> 
-            {stop, closed, State};
-
-		{error, Reason} -> 
-            {stop, Reason, State}
-    end.
+handle_continue(run, #state{socket=Socket}=State) ->
+    process_recv(gen_tcp:recv(Socket, 0, ?Timeout), State).
 
 handle_call(stop, _From, State) ->
     {stop, normal, stopped, State};
@@ -88,3 +62,34 @@ terminate(_Reason, _State) ->
 
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
+
+%%% private
+
+process_line(nomatch, Line, _Socket) ->
+    io:format("~p~n", [Line]),
+    {ok};
+
+process_line(Comment, _Line, Socket) ->
+    io:format("---> # ~p~n", [Comment]),
+    gen_tcp:send(Socket, "#keepalive"),
+    {ok}.
+
+process_recv({ok, Line}, #state{socket=Socket, line_count=LineCount}=State) -> 
+    process_line(string:prefix(Line, "#"), Line, Socket),
+    {noreply, State#state{line_count = LineCount+1}, {continue, run}};
+
+process_recv({error, timeout}, State) -> 
+    {stop, timeout, State};
+
+process_recv({error, closed}, State) -> 
+    {stop, closed, State};
+
+process_recv({error, Reason}, State) -> 
+    {stop, Reason, State}.
+
+process_connect({ok, Socket}, #state{}=State) ->
+    io:format("Socket connected: ~p~n", [Socket]),
+    {noreply, State#state{socket=Socket, line_count=0}, {continue, login}};
+
+process_connect({error, Reason}, State) ->
+    {stop, Reason, State}.
