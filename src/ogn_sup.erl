@@ -17,7 +17,10 @@ start_link() ->
 
 init(_Args) ->
     RestartStrategy = #{strategy => one_for_one, intensity => 1, period => 5},
-    Children = [http_server_server_config(), aprs_client_server_config()],
+    Children = [
+        http_server_server_config(), 
+        aprs_client_server_config()
+    ],
     {ok, {RestartStrategy, Children}}.
 
 http_server_server_config() ->
@@ -26,7 +29,7 @@ http_server_server_config() ->
         restart => permanent,
         shutdown => brutal_kill,
         type => worker,
-        modules => [http_server_server, aprs_client_server_config()]}.
+        modules => [http_server_server]}.
 
 aprs_client_server_config() ->
     #{id => aprs_client_server,

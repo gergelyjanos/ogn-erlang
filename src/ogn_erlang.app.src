@@ -7,34 +7,16 @@
         {modules, [
             ogn_app,
             ogn_sup,
-            http_server_sup,
             http_server_server,
             web,
             aprs_client_server
-            % aircraftpositionapi,
-            % aircraftPositionDb,
-            % aprsclient,
-            % deployhelper,
-            % httpserver,
-            % json,
-            % parser,
-            % receiverpositionapi,
-            % receiverPositionDb,
-            % startup,
-            % systeminfoapi,
-            % systeminfoDb
             ]
         },
         {registered, [
             ogn_sup,
-            http_server_sup,
             http_server_server,
             web,
             aprs_client_server
-            % httpserver,
-            % aircraftPositionDb,
-            % receiverPositionDb,
-            % systeminfodb
             ]
         },
         {applications, [kernel, stdlib ]},

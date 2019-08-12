@@ -25,27 +25,27 @@ start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init(_Args) ->
-    {{continue, connect}, #state{}}.
+    {ok, #state{}, {continue, connect}}.
 
-handle_continue({continue, connect}, State) ->
+handle_continue(connect, State) ->
     case gen_tcp:connect(?AprsHost, ?AprsPort, ?PassivemodeConnectOptions, ?Timeout) of
 		{ok, Socket} ->
 			io:format("Socket connected: ~p~n", [Socket]),
-            {{continue, login}, State#state{socket=Socket, line_count=0}};
-		{error, _Reason} ->
-            {{error, connect_error}, State}
+            {noreply, State#state{socket=Socket, line_count=0}, {continue, login}};
+		{error, Reason} ->
+            {stop, Reason, State}
 	end;
 
-handle_continue({continue, login}, State=#state{socket=Socket}) ->
+handle_continue(login, State=#state{socket=Socket}) ->
     {ok, ServerName} = gen_tcp:recv(Socket, 0),
     io:format("Received ServerName: ~p~n", [ServerName]),
     ok = gen_tcp:send(Socket, ?LoginMessage),
-    {{continue, run}, State};
+    {noreply, State, {continue, run}};
 
-handle_continue({continue, run}, #state{socket=Socket, line_count=LineCount}=State) ->
+handle_continue(run, #state{socket=Socket, line_count=LineCount}=State) ->
     case gen_tcp:recv(Socket, 0, ?Timeout) of
 	    {ok, Line} -> 
-            io:format("~p", [Line]),
+            io:format("~p~n", [Line]),
 			% Comment = string:prefix(Line, "#"),
 			% if 
 			% 	Comment == nomatch -> 
@@ -54,10 +54,15 @@ handle_continue({continue, run}, #state{socket=Socket, line_count=LineCount}=Sta
 			% 		sendkeepalive(Socket),
 			% 		Parser ! {comment, Comment}
 			% end,
-            {{continue, run}, State#state{line_count = LineCount+1}};
-    	{error, timeout} -> {};
-		{error, closed} -> {};
-		{error, _Reason} -> {}
+            {noreply, State#state{line_count = LineCount+1}, {continue, run}};
+    	{error, timeout} -> 
+            {stop, timeout, State};
+
+		{error, closed} -> 
+            {stop, closed, State};
+
+		{error, Reason} -> 
+            {stop, Reason, State}
     end.
 
 handle_call(stop, _From, State) ->
