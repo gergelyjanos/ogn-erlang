@@ -8,6 +8,10 @@
 -export([start_link/0]).
 -export([init/1]).
 
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
+-endif.
+
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
