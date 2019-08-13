@@ -2,6 +2,11 @@
 Open Glider Network APRS data collector in erlang
 **version 1.0.0 alpha**
 
+## Build
+```
+rebar3 compile
+```
+
 ## Start program
 ```
 erl -make

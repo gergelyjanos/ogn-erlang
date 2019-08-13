@@ -4,6 +4,18 @@
     [
         {description, "OGN collector in Erlang"},
         {vsn, "1.0.0"},
+        {registered, [
+            ogn_sup,
+            http_server_sup,
+            http_server_server,
+            web,
+            aprs_client_server
+            % httpserver,
+            % aircraftPositionDb,
+            % receiverPositionDb,
+            % systeminfodb
+            ]
+        },
         {modules, [
             ogn_app,
             ogn_sup,
@@ -23,18 +35,6 @@
             % startup,
             % systeminfoapi,
             % systeminfoDb
-            ]
-        },
-        {registered, [
-            ogn_sup,
-            http_server_sup,
-            http_server_server,
-            web,
-            aprs_client_server
-            % httpserver,
-            % aircraftPositionDb,
-            % receiverPositionDb,
-            % systeminfodb
             ]
         },
         {applications, [kernel, stdlib ]},
