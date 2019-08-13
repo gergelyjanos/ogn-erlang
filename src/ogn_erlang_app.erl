@@ -1,14 +1,16 @@
 %%%--------------------------------------------------------------------- 
-%%% TD*1990
+%% @doc ogn_erlang public API
+%% @end
 %%%--------------------------------------------------------------------- 
 
--module(ogn_app).
+-module(ogn_erlang_app).
 
 -behavior(application).
+
 -export([start/2, stop/1]).
 
 start(_Type, _Args) ->
-    ogn_sup:start_link().
+    ogn_erlang_sup:start_link().
 
 stop(_State) ->
     ok.

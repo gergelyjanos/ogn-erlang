@@ -1,22 +1,31 @@
 %%%--------------------------------------------------------------------- 
-%%% TD*1990
+%% @doc ogn_erlang top level supervisor.
+%% @end
 %%%--------------------------------------------------------------------- 
 
--module(ogn_sup).
+-module(ogn_erlang_sup).
+
 -behavior(supervisor).
 
 -export([start_link/0]).
+
 -export([init/1]).
+
+-define(SERVER, ?MODULE).
 
 -ifdef(TEST).
 -include_lib("eunit/include/eunit.hrl").
 -endif.
 
 start_link() ->
-    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 init(_Args) ->
-    RestartStrategy = #{strategy => one_for_one, intensity => 1, period => 5},
+    RestartStrategy = #{
+        strategy => one_for_one, 
+        intensity => 1, 
+        period => 5
+    },
     Children = [
         http_server_server_config(), 
         aprs_client_server_config()
