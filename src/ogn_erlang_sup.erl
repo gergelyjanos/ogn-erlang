@@ -8,7 +8,6 @@
 -behavior(supervisor).
 
 -export([start_link/0]).
-
 -export([init/1]).
 
 -define(SERVER, ?MODULE).
@@ -48,4 +47,11 @@ aprs_client_server_config() ->
         type => worker,
         modules => [aprs_client_server]}.
 
+% parser_sup_config() ->
+%     #{id => parser_sup,
+%         start => {parser_sup, start_link, []},
+%         restart => permanent,
+%         shutdown => brutal_kill,
+%         type => supervisor,
+%         modules => [parser_sup]}.
 
