@@ -14,15 +14,16 @@
 -define(Timeout, 20000).
 -define(LoginMessage, "user td1990 pass -1 vers ogn_erlang 1.0.0\r\n").
 
+-define(SERVER, ?MODULE).
 
 start() ->
-    gen_server:start({local, ?MODULE}, ?MODULE, [], []).
+    gen_server:start({local, ?SERVER}, ?MODULE, [], []).
+
+start_link() ->
+    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 stop() ->
     gen_server:call(?MODULE).
-
-start_link() ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init(_Args) ->
     {ok, #state{}, {continue, connect}}.
@@ -32,7 +33,7 @@ handle_continue(connect, State) ->
 
 handle_continue(login, State=#state{socket=Socket}) ->
     {ok, ServerName} = gen_tcp:recv(Socket, 0),
-    io:format("Received ServerName: ~p~n", [ServerName]),
+    parser_receiver_server:parse_server_name(ServerName),
     ok = gen_tcp:send(Socket, ?LoginMessage),
     {noreply, State, {continue, run}};
 
@@ -66,12 +67,14 @@ code_change(_OldVsn, State, _Extra) ->
 %%% private
 
 process_line(nomatch, Line, _Socket) ->
-    io:format("~p~n", [Line]),
+    % io:format("~p~n", [Line]),
+    parser_receiver_server:parse_raw_line(Line),
     {ok};
 
 process_line(Comment, _Line, Socket) ->
-    io:format("---> # ~p~n", [Comment]),
+    % io:format("---> # ~p~n", [Comment]),
     gen_tcp:send(Socket, "#keepalive"),
+    parser_receiver_server:parse_comment(Comment),
     {ok}.
 
 process_recv({ok, Line}, #state{socket=Socket, line_count=LineCount}=State) -> 
@@ -88,7 +91,7 @@ process_recv({error, Reason}, State) ->
     {stop, Reason, State}.
 
 process_connect({ok, Socket}, #state{}=State) ->
-    io:format("Socket connected: ~p~n", [Socket]),
+    % io:format("Socket connected: ~p~n", [Socket]),
     {noreply, State#state{socket=Socket, line_count=0}, {continue, login}};
 
 process_connect({error, Reason}, State) ->

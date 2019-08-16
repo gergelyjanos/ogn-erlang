@@ -27,7 +27,9 @@ init(_Args) ->
     },
     Children = [
         http_server_server_config(), 
-        aprs_client_server_config()
+        aprs_client_server_config(),
+        parser_sup_config(),
+        parser_receiver_server_config()
     ],
     {ok, {RestartStrategy, Children}}.
 
@@ -47,11 +49,18 @@ aprs_client_server_config() ->
         type => worker,
         modules => [aprs_client_server]}.
 
-% parser_sup_config() ->
-%     #{id => parser_sup,
-%         start => {parser_sup, start_link, []},
-%         restart => permanent,
-%         shutdown => brutal_kill,
-%         type => supervisor,
-%         modules => [parser_sup]}.
+parser_sup_config() ->
+    #{id => parser_sup,
+        start => {parser_sup, start_link, []},
+        restart => permanent,
+        shutdown => brutal_kill,
+        type => supervisor,
+        modules => [parser_sup]}.
 
+parser_receiver_server_config() ->
+    #{id => parser_receiver_server,
+        start => {parser_receiver_server, start_link, []},
+        restart => permanent,
+        shutdown => brutal_kill,
+        type => worker,
+        modules => [parser_receiver_server]}.

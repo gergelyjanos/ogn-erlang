@@ -37,5 +37,3 @@ parser_server_config() ->
         type => worker,
         modules => [parser_server]}.
 
-
-
