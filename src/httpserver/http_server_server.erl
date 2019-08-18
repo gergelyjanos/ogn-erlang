@@ -21,7 +21,7 @@ start_link() ->
    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init(_Args) ->
-   Inet = inets:start(),
+   Inet = inets:start(), % TODO error, already started?
    io:format("inet:start ~p~n", [Inet]),
    {ok, Pid} = inets:start(httpd, 
       [
