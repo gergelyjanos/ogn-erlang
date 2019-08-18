@@ -7,6 +7,8 @@
 
 -export([parse_raw_line/1, parse_server_name/1]).
 
+-record(state, {}).
+
 %% api
 -spec parse_raw_line(Line) -> Result
    when
@@ -14,7 +16,7 @@
       Result :: term().
 
 parse_raw_line(Line) ->
-      {ok, Pid} = parser_sup:start_parser_server(),
+   {ok, Pid} = parser_sup:start_parser_server(),
    gen_server:cast(Pid, {raw_line, Line}),
    ok.
 
@@ -37,7 +39,7 @@ start_link() ->
    gen_server:start_link(?MODULE, [], []).
 
 init(_Args) ->
-   {ok, _Args}.
+   {ok, #state{}}.
 
 handle_call(stop, _From, State) ->
    {stop, normal, stopped, State};
