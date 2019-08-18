@@ -52,7 +52,7 @@ handle_continue(connect, State) ->
 
 handle_continue(login, State=#state{socket=Socket}) ->
     {ok, ServerName} = gen_tcp:recv(Socket, 0, ?RECVTIMEOUT),
-    parser_receiver_server:parse_server_name(ServerName),
+    parser_server:parse_server_name(ServerName),
     ok = gen_tcp:send(Socket, ?LoginMessage),
     {noreply, State#state{keepalive_time = erlang:system_time(second)}, {continue, run}};
 
@@ -117,7 +117,7 @@ code_change(_OldVsn, State, _Extra) ->
         Result :: term().
 
 process_recv({ok, Line}, #state{line_count=LineCount}=State) -> 
-    parser_receiver_server:parse_raw_line(Line),
+    parser_server:parse_raw_line(Line),
     process_keepalive(State#state{line_count = LineCount+1}, erlang:system_time(second));
 
 process_recv({error, timeout}, #state{}=State) -> 
@@ -147,6 +147,7 @@ send_keepalive(#state{socket=Socket}=State) ->
 process_keepalive(#state{keepalive_time=KeepAliveTime}=State, SystemTime)
     when SystemTime - ?RECVTIMEOUT > KeepAliveTime ->
         send_keepalive(State);
+
 process_keepalive(#state{}=State, _SystemTime) ->
     {noreply, State, {continue, run}}.
 

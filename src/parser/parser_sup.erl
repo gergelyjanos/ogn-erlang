@@ -12,8 +12,22 @@
 -include_lib("eunit/include/eunit.hrl").
 -endif.
 
+-spec start_parser_server() -> Result
+    when 
+        Result :: {ok, Pid},
+        Pid :: term().
+
 start_parser_server() ->
     supervisor:start_child(?MODULE, []).
+
+% -spec start_line_parser_server(Line) -> Result
+%     when 
+%         Line :: binary(),
+%         Result :: term().
+
+% start_line_parser_server(Line) ->
+%     % io:format("parse line ~p~n", [Line]),
+%     supervisor:start_child(?MODULE, [line, Line]).
 
 start_link() ->
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
