@@ -1,11 +1,11 @@
 {
     application, 
-    ogn_erlang, 
+    ogn_collector, 
     [
         {description, "OGN collector in Erlang"},
         {vsn, "1.0.0"},
         {registered, []},
-        {mod, {ogn_erlang_app, []}},
+        {mod, {ogn_collector_app, []}},
         {applications, [kernel, stdlib ]},
         {env, []},
         {modules, []},

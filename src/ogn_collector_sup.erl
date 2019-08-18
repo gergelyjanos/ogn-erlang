@@ -1,9 +1,9 @@
 %%%--------------------------------------------------------------------- 
-%% @doc ogn_erlang top level supervisor.
+%% @doc ogn_collector top level supervisor.
 %% @end
 %%%--------------------------------------------------------------------- 
 
--module(ogn_erlang_sup).
+-module(ogn_collector_sup).
 
 -behavior(supervisor).
 
