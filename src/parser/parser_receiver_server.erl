@@ -1,7 +1,7 @@
 -module(parser_receiver_server).
 -behaviour(gen_server).
 
--export([parse_comment/1, parse_raw_line/1, parse_server_name/1]).
+-export([parse_raw_line/1, parse_server_name/1]).
 -export([start/0, stop/0, start_link/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -record(state, {dummy}).
@@ -9,12 +9,19 @@
 -define(SERVER, ?MODULE).
 
 %% API
-parse_comment(Comment) ->
-    gen_server:cast(?MODULE, {comment, Comment}).
+-spec parse_raw_line(Line) -> Result
+   when
+      Line :: binary(),
+      Result :: term().
 
 parse_raw_line(Line) ->
     gen_server:cast(?MODULE, {raw_line, Line}).
 
+-spec parse_server_name(ServerName) -> Result
+   when
+      ServerName :: binary(),
+      Result :: term().
+   
 parse_server_name(ServerName) ->
     gen_server:cast(?MODULE, {server_name, ServerName}).
 
@@ -37,14 +44,19 @@ handle_call(stop, _From, State) ->
 handle_call(_Request, _From, State) ->
     {reply, ok, State}.
 
+-spec handle_cast({server_name, ServerName} | {raw_line, Line}, State) -> Result
+   when
+      ServerName :: binary(),
+      Line :: binary(),
+      State :: #state{},
+      Result :: term().
+
 handle_cast({server_name, ServerName}, State) ->
    io:format("parse server_name ~p~n", [ServerName]),
    {noreply, State};
-handle_cast({comment, Comment}, State) ->
-   io:format("parse comment ~p~n", [Comment]),
-   {noreply, State};
+
 handle_cast({raw_line, Line}, State) ->
-   io:format("parse raw_line ~p~n", [Line]),
+   process_line(string:prefix(Line, "#"), Line),
    {noreply, State}.
 
 handle_info(_Info, State) ->
@@ -55,3 +67,18 @@ terminate(_Reason, _State) ->
 
 code_change(_OldVsn, State, _Extra) ->
    {ok, State}.
+
+-spec process_line(Comment, Line) -> ok
+   when
+      Comment :: nomatch | binary(),
+      Line :: binary().
+
+process_line(nomatch, Line) ->
+   io:format("parse line ~p~n", [Line]),
+   ok;
+process_line(Comment, _Line) ->
+   io:format("parse comment ~p~n", [Comment]),
+   ok.
+
+
+
