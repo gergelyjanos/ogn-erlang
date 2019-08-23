@@ -8,12 +8,12 @@
 
 -record(state, {socket, line_count :: integer(), keepalive_time :: integer()}).
 
--define(AprsPort, 10152).
--define(AprsHost, "aprs.glidernet.org").
--define(PassivemodeConnectOptions,	[binary, {active, false}, {packet, line}, {delay_send, false}, {nodelay, true}]).
--define(RECVTIMEOUT, 20000).
--define(CONNECTTIMEOUT, 20000).
--define(LoginMessage, "user td1990 pass -1 vers ogn_erlang 1.0.0\r\n").
+-define(APRS_PORT, 10152).
+-define(APRS_HOST, "aprs.glidernet.org").
+-define(PASSIVE_MODE_CONNECTION_OPTIONS,	[binary, {active, false}, {packet, line}, {delay_send, false}, {nodelay, true}]).
+-define(RECV_TIMEOUT, 20000).
+-define(CONNECT_TIMEOUT, 20000).
+-define(LOGIN_MESSAGE, "user td1990 pass -1 vers ogn_erlang 1.0.0\r\n").
 
 -define(SERVER, ?MODULE).
 
@@ -38,7 +38,7 @@ stop() ->
 -spec init(_Args) -> Result
     when
         _Args :: term(),
-        Result :: term().
+        Result :: {ok, #state{}, {continue, connect}}.
 init(_Args) ->
     {ok, #state{}, {continue, connect}}.
 
@@ -46,25 +46,21 @@ init(_Args) ->
     when
         State :: #state{},
         Result :: term().
-
 handle_continue(connect, State) ->
-    process_connect(gen_tcp:connect(?AprsHost, ?AprsPort, ?PassivemodeConnectOptions, ?CONNECTTIMEOUT), State);
-
+    process_connect(gen_tcp:connect(?APRS_HOST, ?APRS_PORT, ?PASSIVE_MODE_CONNECTION_OPTIONS, ?CONNECT_TIMEOUT), State);
 handle_continue(login, State=#state{socket=Socket}) ->
-    {ok, ServerName} = gen_tcp:recv(Socket, 0, ?RECVTIMEOUT),
+    {ok, ServerName} = gen_tcp:recv(Socket, 0, ?RECV_TIMEOUT),
     parser_server:parse_server_name(ServerName),
-    ok = gen_tcp:send(Socket, ?LoginMessage),
+    ok = gen_tcp:send(Socket, ?LOGIN_MESSAGE),
     {noreply, State#state{keepalive_time = erlang:system_time(second)}, {continue, run}};
-
 handle_continue(run, #state{socket=Socket}=State) ->
-    process_recv(gen_tcp:recv(Socket, 0, ?RECVTIMEOUT), State).
+    process_recv(gen_tcp:recv(Socket, 0, ?RECV_TIMEOUT), State).
 
 -spec handle_call(stop, _From, State) -> Result
     when
         _From :: term(),
         State :: #state{},
-        Result :: term().
-
+        Result :: {stop, normal, stopped, State}.
 handle_call(stop, _From, State) ->
     {stop, normal, stopped, State}.
 
@@ -72,8 +68,7 @@ handle_call(stop, _From, State) ->
     when
         _Msg :: term(),
         State :: #state{},
-        Result :: term().
-
+        Result :: {noreply, State}.
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
@@ -82,7 +77,6 @@ handle_cast(_Msg, State) ->
         _Info :: term(),
         State :: #state{},
         Result :: term().
-    
 handle_info(_Info, State) ->
     {noreply, State}.
 
@@ -91,7 +85,6 @@ handle_info(_Info, State) ->
         _Reason :: term(),
         _State :: #state{},
         Result :: term().
-    
 terminate(_Reason, _State) ->
     ok.
 
@@ -101,7 +94,6 @@ terminate(_Reason, _State) ->
         State :: #state{},
         _Extra :: term(),
         Result :: term().
-    
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
@@ -115,25 +107,20 @@ code_change(_OldVsn, State, _Extra) ->
         Reason :: term(),
         State :: #state{},
         Result :: term().
-
 process_recv({ok, Line}, #state{line_count=LineCount}=State) -> 
     parser_server:parse_raw_line(Line),
     process_keepalive(State#state{line_count = LineCount+1}, erlang:system_time(second));
-
 process_recv({error, timeout}, #state{}=State) -> 
     send_keepalive(State);
-
 process_recv({error, closed}, State) -> 
     {stop, closed, State};
-
 process_recv({error, Reason}, State) -> 
     {stop, Reason, State}.
 
 -spec send_keepalive(State) -> Result
     when
         State :: #state{},
-        Result :: term().
-
+        Result :: {noreply, #state{}, {continue, run}}.
 send_keepalive(#state{socket=Socket}=State) ->
     gen_tcp:send(Socket, "#keepalive"),
     {noreply, State#state{keepalive_time = erlang:system_time(second)}, {continue, run}}.
@@ -142,12 +129,10 @@ send_keepalive(#state{socket=Socket}=State) ->
     when
         State :: #state{},
         SystemTime :: integer(),
-        Result :: term().
-
+        Result :: {noreply, #state{}, {continue, run}}.
 process_keepalive(#state{keepalive_time=KeepAliveTime}=State, SystemTime)
-    when SystemTime - ?RECVTIMEOUT > KeepAliveTime ->
+    when SystemTime - ?RECV_TIMEOUT > KeepAliveTime ->
         send_keepalive(State);
-
 process_keepalive(#state{}=State, _SystemTime) ->
     {noreply, State, {continue, run}}.
 
@@ -156,11 +141,8 @@ process_keepalive(#state{}=State, _SystemTime) ->
         Socket :: term(),
         Reason :: term(),
         State :: #state{},
-        Result :: term().
-
+        Result :: {noreply, State, {continue, run}} | {stop, Reason, State}.
 process_connect({ok, Socket}, #state{}=State) ->
-    % io:format("Socket connected: ~p~n", [Socket]),
     {noreply, State#state{socket=Socket, line_count=0}, {continue, login}};
-
 process_connect({error, Reason}, State) ->
     {stop, Reason, State}.

@@ -13,7 +13,7 @@
 -spec parse_raw_line(Line) -> Result
    when
       Line :: binary(),
-      Result :: term().
+      Result :: ok.
 
 parse_raw_line(Line) ->
    {ok, Pid} = parser_sup:start_parser_server(),
@@ -23,7 +23,7 @@ parse_raw_line(Line) ->
 -spec parse_server_name(ServerName) -> Result
    when
       ServerName :: binary(),
-      Result :: term().
+      Result :: ok.
    
 parse_server_name(ServerName) ->
    {ok, Pid} = parser_sup:start_parser_server(),
