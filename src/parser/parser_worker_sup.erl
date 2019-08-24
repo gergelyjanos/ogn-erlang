@@ -1,10 +1,10 @@
--module(parser_sup).
+-module(parser_worker_sup).
 -behaviour(supervisor).
 
 -export([start_link/0]).
 -export([init/1]).
 
--export([start_parser_server/0]).
+-export([start_parser_worker/0]).
 
 -define(SERVER, ?MODULE).
 
@@ -12,12 +12,12 @@
 -include_lib("eunit/include/eunit.hrl").
 -endif.
 
--spec start_parser_server() -> Result
+-spec start_parser_worker() -> Result
     when 
         Result :: {ok, Pid},
         Pid :: term().
 
-start_parser_server() ->
+start_parser_worker() ->
     supervisor:start_child(?MODULE, []).
 
 start_link() ->
@@ -30,15 +30,15 @@ init(_Args) ->
         period => 5
     },
     Children = [
-        parser_server_config()
+        parser_worker_server_config()
     ],
     {ok, {RestartStrategy, Children}}.
 
-parser_server_config() ->
-    #{id => parser_server,
-        start => {parser_server, start, []},
+parser_worker_server_config() ->
+    #{id => parser_worker_server,
+        start => {parser_worker_server, start, []},
         restart => transient,
         shutdown => brutal_kill,
         type => worker,
-        modules => [parser_server]}.
+        modules => [parser_worker_server]}.
 

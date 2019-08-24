@@ -26,9 +26,10 @@ init(_Args) ->
         period => 5
     },
     Children = [
+        parser_worker_sup_config(),
+        parser_server_config(),
         http_server_server_config(), 
-        aprs_client_server_config(),
-        parser_sup_config()
+        aprs_client_server_config()
     ],
     {ok, {RestartStrategy, Children}}.
 
@@ -48,10 +49,18 @@ aprs_client_server_config() ->
         type => worker,
         modules => [aprs_client_server]}.
 
-parser_sup_config() ->
-    #{id => parser_sup,
-        start => {parser_sup, start_link, []},
+parser_worker_sup_config() ->
+    #{id => parser_worker_sup,
+        start => {parser_worker_sup, start_link, []},
         restart => permanent,
         shutdown => brutal_kill,
         type => supervisor,
-        modules => [parser_sup]}.
+        modules => [parser_worker_sup]}.
+
+parser_server_config() ->
+    #{id => parser_server,
+        start => {parser_server, start_link, []},
+        restart => permanent,
+        shutdown => brutal_kill,
+        type => worker,
+        modules => [parser_server]}.
