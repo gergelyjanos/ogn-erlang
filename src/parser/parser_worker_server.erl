@@ -15,9 +15,13 @@
    when
       Line :: binary(),
       Result :: ok.
+parse_raw_line(<<"#",Comment/binary>>) ->
+   {ok, Pid} = parser_worker_sup:start_parser_worker(),
+   gen_server:cast(Pid, {comment, Comment}), % todo add patterns
+   ok;
 parse_raw_line(Line) ->
    {ok, Pid} = parser_worker_sup:start_parser_worker(),
-   gen_server:cast(Pid, {raw_line, Line}), % todo add patterns
+   gen_server:cast(Pid, {line, Line}), % todo add patterns
    ok.
 
 %% gen server api
@@ -39,9 +43,11 @@ handle_call(_Request, _From, State) ->
 
 handle_cast({server_name, _ServerName}, State) ->
    {stop, normal, State};
-
-handle_cast({raw_line, Line}, State) ->
-   process_line(string:prefix(Line, "#"), Line),
+handle_cast({line, _Line}, State) ->
+   % io:format("~p:cast line ~p~n", [?MODULE, Line]),
+   {stop, normal, State};
+handle_cast({comment, Comment}, State) ->
+   io:format("~p:cast comment ~p~n", [?MODULE, Comment]),
    {stop, normal, State}.
 
 handle_info(_Info, State) ->
@@ -52,18 +58,3 @@ terminate(_Reason, _State) ->
 
 code_change(_OldVsn, State, _Extra) ->
    {ok, State}.
-
-%% parsers
--spec process_line(Comment, Line) -> ok
-   when
-      Comment :: nomatch | binary(),
-      Line :: binary().
-
-process_line(nomatch, Line) ->
-   io:format("~p:process_line ~p~n", [?MODULE, Line]),
-   ok;
-
-process_line(Comment, _Line) ->
-   io:format("~p:process_comment ~p~n", [?MODULE, Comment]),
-   ok.
-
