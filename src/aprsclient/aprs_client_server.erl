@@ -12,6 +12,7 @@
 -define(APRS_HOST, "aprs.glidernet.org").
 -define(PASSIVE_MODE_CONNECTION_OPTIONS,	[binary, {active, false}, {packet, line}, {delay_send, false}, {nodelay, true}]).
 -define(RECV_TIMEOUT, 20000).
+-define(KEEPALIVE_TIMEOUT, 200).
 -define(CONNECT_TIMEOUT, 20000).
 -define(LOGIN_MESSAGE, "user td1990 pass -1 vers ogn_erlang 1.0.0\r\n").
 
@@ -122,6 +123,7 @@ process_recv({error, Reason}, State) ->
         State :: #state{},
         Result :: {noreply, #state{}, {continue, run}}.
 send_keepalive(#state{socket=Socket}=State) ->
+    io:format("send #keepalive~n"),
     gen_tcp:send(Socket, "#keepalive"),
     {noreply, State#state{keepalive_time = erlang:system_time(second)}, {continue, run}}.
 
@@ -131,7 +133,7 @@ send_keepalive(#state{socket=Socket}=State) ->
         SystemTime :: integer(),
         Result :: {noreply, #state{}, {continue, run}}.
 process_keepalive(#state{keepalive_time=KeepAliveTime}=State, SystemTime)
-    when SystemTime - ?RECV_TIMEOUT > KeepAliveTime ->
+    when SystemTime - ?KEEPALIVE_TIMEOUT > KeepAliveTime ->
         send_keepalive(State);
 process_keepalive(#state{}=State, _SystemTime) ->
     {noreply, State, {continue, run}}.
