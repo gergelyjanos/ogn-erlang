@@ -4,7 +4,7 @@
 -export([start_link/0]).
 -export([init/1]).
 
--export([start_parser_worker/0]).
+-export([start_parser_worker/1]).
 
 -define(SERVER, ?MODULE).
 
@@ -12,13 +12,8 @@
 -include_lib("eunit/include/eunit.hrl").
 -endif.
 
--spec start_parser_worker() -> Result
-    when 
-        Result :: {ok, Pid},
-        Pid :: term().
-
-start_parser_worker() ->
-    supervisor:start_child(?MODULE, []).
+start_parser_worker(Parsers) ->
+    supervisor:start_child(?MODULE, [Parsers]).
 
 start_link() ->
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).

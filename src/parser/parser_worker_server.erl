@@ -2,38 +2,34 @@
 -behaviour(gen_server).
 
 %% API
--export([start/0, start_link/0]).
+-export([start/1, start_link/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--export([parse_raw_line/1]).
+-export([parse_raw_line/2]).
 
--record(state, {}).
+-record(state, {parsers}).
 
 %% api
 
--spec parse_raw_line(Line) -> Result
-   when
-      Line :: binary(),
-      Result :: ok.
-parse_raw_line(<<"#",Comment/binary>>) ->
-   {ok, Pid} = parser_worker_sup:start_parser_worker(),
-   gen_server:cast(Pid, {comment, Comment}), % todo add patterns
+parse_raw_line(<<"#",Comment/binary>>, Parsers) ->
+   {ok, Pid} = parser_worker_sup:start_parser_worker(Parsers),
+   gen_server:cast(Pid, {comment, Comment}),
    ok;
-parse_raw_line(Line) ->
-   {ok, Pid} = parser_worker_sup:start_parser_worker(),
-   gen_server:cast(Pid, {line, Line}), % todo add patterns
+parse_raw_line(Line, Parsers) ->
+   {ok, Pid} = parser_worker_sup:start_parser_worker(Parsers),
+   gen_server:cast(Pid, {line, Line}),
    ok.
 
 %% gen server api
 
-start() ->
-   gen_server:start(?MODULE, [], []).
+start(Parsers) ->
+   gen_server:start(?MODULE, [Parsers], []).
 
 start_link() ->
    gen_server:start_link(?MODULE, [], []).
 
-init(_Args) ->
-   {ok, #state{}}.
+init([Parsers]) ->
+   {ok, #state{parsers = Parsers}}.
 
 handle_call(stop, _From, State) ->
    {stop, normal, stopped, State};
@@ -43,8 +39,9 @@ handle_call(_Request, _From, State) ->
 
 handle_cast({server_name, _ServerName}, State) ->
    {stop, normal, State};
-handle_cast({line, _Line}, State) ->
-   % io:format("~p:cast line ~p~n", [?MODULE, Line]),
+handle_cast({line, Line}, #state{parsers = Parsers} = State) ->
+   Result = regex_parser:parse_line(Line, Parsers),
+   io:format("handle_cast(line) ~p~n", [Result]),
    {stop, normal, State};
 handle_cast({comment, Comment}, State) ->
    io:format("~p:cast comment ~p~n", [?MODULE, Comment]),
