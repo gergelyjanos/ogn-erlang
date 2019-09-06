@@ -1,6 +1,6 @@
 -module(parser_tool).
 
--export([list_to_latlon/2]).
+-export([list_to_latlon/2, parse_aircraft_comment/2]).
 
 -define(RUN_OPTIONS, [{capture, all_but_first, list}]).
 
@@ -26,4 +26,12 @@ latlontext_to_number([Degree, Minute, Second, Globe]) ->
             {DD, degree};
         "W" ->
             {-DD, degree}
+    end.
+
+parse_aircraft_comment(Data, {Regex, _}) ->
+    case re:run(Data, Regex, ?RUN_OPTIONS) of
+        {match, [DeviceId, ClimbRate, TurnRate]} ->
+            {DeviceId, {list_to_integer(ClimbRate), footpmin}, {list_to_float(TurnRate), tr}};
+        nomatch -> 
+            {"", {0.0, footpmin}, {0.0, tr}}
     end.

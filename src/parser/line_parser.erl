@@ -50,5 +50,7 @@ process_parse_line(_, Acc) ->
     Acc.
 
 create_result(aircraft_position, Map, OtherParsers) ->
-    aircraft_position_parser:create_aircraft_position_record(Map, OtherParsers).
+    aircraft_position_parser:create_aircraft_position_record(Map, OtherParsers);
+create_result(Pattern, _Map, _OtherParsers) ->
+    Pattern.
 
