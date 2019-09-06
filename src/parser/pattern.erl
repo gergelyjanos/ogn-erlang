@@ -7,6 +7,7 @@
 -define(RECEIVERPOSITION_PATTERN, "^(?P<receiver>.+)>(?P<message_format>.+),.+,.+,(?P<server>.+):\\/(?P<timestamp>\\d+)h(?P<latitude>\\d+\\.\\d+[NS])[\\/\\\\I]+(?P<longitude>\\d+\\.\\d+[EW])[\\/\\&]+A=(?P<altitude>\\d+)$").
 -define(RECEIVERSTATUS_PATTERN, "^(?P<receiver>.+)>(?P<message_format>.+),.+,.+,(?P<server>.+):>(?P<timestamp>\\d+)h\\s+(?P<version>.+)\\s+CPU:(?P<cpu>\\d+\\.\\d+)\s+RAM:(?P<ram>\\S+)\\s+(?P<other>.*)$").
 -define(TIMESTAMP_PATTERN, "^(\\d\\d)(\\d\\d)(\\d\\d)$").
+-define(LATLON_PATTERN, "^(?P<degree>\\d{2,3})(?P<minute>\\d{2})\\.(?P<second>\\d{2})(?P<globe>[EWSN])$").
 
 get_pattern(aircraft_position) -> 
     ?AIRCRAFT_POSITION_PATTERN;
@@ -17,5 +18,7 @@ get_pattern(receiver_position) ->
 get_pattern(receiver_status) ->
     ?RECEIVERSTATUS_PATTERN;
 get_pattern(timestamp) ->
-    ?TIMESTAMP_PATTERN.
+    ?TIMESTAMP_PATTERN;
+get_pattern(latlon) ->
+    ?LATLON_PATTERN.
 

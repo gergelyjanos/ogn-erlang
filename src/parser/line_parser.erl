@@ -15,9 +15,10 @@ compile_parsers()->
                 receiver_position, 
                 receiver_status]
         ],
-        {
-            {aircraft_comment, re_compile(aircraft_comment)},
-            {timestamp, re_compile(timestamp)}
+        #{
+            aircraft_comment => re_compile(aircraft_comment),
+            timestamp => re_compile(timestamp),
+            latlon => re_compile(latlon)
         }
     }.    
 
