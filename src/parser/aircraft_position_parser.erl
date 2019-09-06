@@ -35,5 +35,17 @@ create_aircraft_position({receiver, Data}, #acc{record = Record} = Acc) ->
     Acc#acc{record = Record#aircraft_position{receiver = Data}};
 create_aircraft_position({timestamp, Data}, #acc{record = Record} = Acc) ->
     Acc#acc{record = Record#aircraft_position{timestamp = Data}}; % todo parse
+create_aircraft_position({latitude, Data}, #acc{record = Record} = Acc) ->
+    Acc#acc{record = Record#aircraft_position{latitude = Data}}; % todo parse
+create_aircraft_position({longitude, Data}, #acc{record = Record} = Acc) ->
+    Acc#acc{record = Record#aircraft_position{longitude = Data}}; % todo parse
+create_aircraft_position({heading, Data}, #acc{record = Record} = Acc) ->
+    Acc#acc{record = Record#aircraft_position{heading = Data}}; % todo parse
+create_aircraft_position({ground_speed, Data}, #acc{record = Record} = Acc) ->
+    Acc#acc{record = Record#aircraft_position{ground_speed = Data}}; % todo parse
+create_aircraft_position({altitude, Data}, #acc{record = Record} = Acc) ->
+    Acc#acc{record = Record#aircraft_position{altitude = Data}}; % todo parse
+% create_aircraft_position({comment, Data}, #acc{record = Record} = Acc) ->
+%     Acc#acc{record = Record#aircraft_position{altitude = Data}}; % todo parse
 create_aircraft_position(_, Acc) ->
     Acc.
