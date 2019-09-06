@@ -40,7 +40,7 @@ handle_call(_Request, _From, State) ->
 handle_cast({server_name, _ServerName}, State) ->
    {stop, normal, State};
 handle_cast({line, Line}, #state{parsers = Parsers} = State) ->
-   process_parse_line_result(regex_parser:parse_line(Line, Parsers)),
+   process_parse_line_result(line_parser:parse_line(Line, Parsers)),
    {stop, normal, State};
 handle_cast({comment, Comment}, State) ->
    io:format("~p:cast comment ~p~n", [?MODULE, Comment]),
@@ -57,5 +57,5 @@ code_change(_OldVsn, State, _Extra) ->
 
 process_parse_line_result({nomatch, _}) -> 
    ok;
-process_parse_line_result({Pattern, Map}) ->
-   io:format("Pattern ~p, Map ~p~n", [Pattern, Map]). 
+process_parse_line_result({Pattern, Record}) ->
+   io:format("Pattern ~p, Record ~p~n", [Pattern, Record]). 

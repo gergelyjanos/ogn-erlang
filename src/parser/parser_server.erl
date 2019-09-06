@@ -35,7 +35,7 @@ start_link() ->
    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 init(_Args) ->
-   Parsers = regex_parser:compile_parsers(),
+   Parsers = line_parser:compile_parsers(),
    {ok, #state{parsers = Parsers}}.
 
 handle_call(stop, _From, State) ->

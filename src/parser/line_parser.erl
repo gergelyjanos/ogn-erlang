@@ -1,4 +1,4 @@
--module(regex_parser).
+-module(line_parser).
 
 -export([compile_parsers/0, parse_line/2]).
 
@@ -27,7 +27,6 @@ re_compile(Pattern) ->
     Namelist = [binary_to_atom(Name, utf8) || Name <- NamelistBinary],
     {Regex, Namelist}.
 
-
 parse_line(Line, {LineParsers, OtherParsers}) ->
     #parser_acc{pattern = Pattern, data_record = DataRecord} = lists:foldl(
         fun process_parse_line/2, 
@@ -49,6 +48,6 @@ process_parse_line(
 process_parse_line(_, Acc) ->
     Acc.
 
-create_result(aircraft_position, Map, _OtherParsers) ->
-    Map.
+create_result(aircraft_position, Map, OtherParsers) ->
+    aircraft_position_parser:create_aircraft_position_record(Map, OtherParsers).
 

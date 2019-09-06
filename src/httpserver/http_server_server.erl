@@ -22,7 +22,7 @@ start_link() ->
 
 init(_Args) ->
    Inet = inets:start(), % TODO error, already started?
-   io:format("inet:start ~p~n", [Inet]),
+   % io:format("inet:start ~p~n", [Inet]),
    {ok, Pid} = inets:start(httpd, 
       [
          {modules, [ 
@@ -46,7 +46,7 @@ init(_Args) ->
          {mime_types, [{"html","text/html"}, {"json", "application/json"}]}
       ]
    ),
-   io:format("httpd ~p ~p~n", [Pid, httpd:info(Pid)]),
+   % io:format("httpd ~p ~p~n", [Pid, httpd:info(Pid)]),
    {ok, #state{listen=ok}}.
 
 handle_call(stop, _From, State) ->
