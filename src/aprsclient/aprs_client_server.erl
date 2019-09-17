@@ -51,7 +51,7 @@ handle_continue(connect, State) ->
     process_connect(gen_tcp:connect(?APRS_HOST, ?APRS_PORT, ?PASSIVE_MODE_CONNECTION_OPTIONS, ?CONNECT_TIMEOUT), State);
 handle_continue(login, State=#state{socket=Socket}) ->
     {ok, ServerName} = gen_tcp:recv(Socket, 0, ?RECV_TIMEOUT),
-    parser_server:parse_server_name(ServerName),
+    parser_api:parse_server_name(ServerName),
     ok = gen_tcp:send(Socket, ?LOGIN_MESSAGE),
     {noreply, State#state{keepalive_time = erlang:system_time(second)}, {continue, run}};
 handle_continue(run, #state{socket=Socket}=State) ->
@@ -109,7 +109,7 @@ code_change(_OldVsn, State, _Extra) ->
         State :: #state{},
         Result :: term().
 process_recv({ok, Line}, #state{line_count=LineCount}=State) -> 
-    parser_server:parse_raw_line(Line),
+    parser_api:parse_raw_line(Line),
     process_keepalive(State#state{line_count = LineCount+1}, erlang:system_time(second));
 process_recv({error, timeout}, #state{}=State) -> 
     send_keepalive(State);
