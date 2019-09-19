@@ -1,4 +1,4 @@
--module(parser_api).
+-module(ogn_collector_parser_api).
 
 -export([parse_raw_line/1, parse_server_name/1]).
 
