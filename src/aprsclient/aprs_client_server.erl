@@ -123,7 +123,7 @@ process_recv({error, Reason}, State) ->
         State :: #state{},
         Result :: {noreply, #state{}, {continue, run}}.
 send_keepalive(#state{socket=Socket}=State) ->
-    io:format("send #keepalive~n"),
+    ogn_collector_logger:info("send #keepalive~n"),
     gen_tcp:send(Socket, "#keepalive"),
     {noreply, State#state{keepalive_time = erlang:system_time(second)}, {continue, run}}.
 

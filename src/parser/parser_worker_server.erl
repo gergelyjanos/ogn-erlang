@@ -43,7 +43,7 @@ handle_cast({line, Line}, #state{parsers = Parsers} = State) ->
    process_parse_line_result(line_parser:parse_line(Line, Parsers)),
    {stop, normal, State};
 handle_cast({comment, Comment}, State) ->
-   io:format("~p:cast comment ~p~n", [?MODULE, Comment]),
+   ogn_collector_logger:debug("~p:cast comment ~p~n", [?MODULE, Comment]),
    {stop, normal, State}.
 
 handle_info(_Info, State) ->
@@ -58,4 +58,4 @@ code_change(_OldVsn, State, _Extra) ->
 process_parse_line_result({nomatch, _}) -> 
    ok;
 process_parse_line_result({Pattern, Record}) ->
-   io:format("Pattern ~p, Record ~p~n", [Pattern, Record]). 
+   ogn_collector_logger:debug("Pattern ~p, Record ~p~n", [Pattern, Record]). 

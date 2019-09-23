@@ -2,12 +2,15 @@
 
 -export([info/2, debug/2, error/2]).
 
-info(_Format, _Msg) ->
+info(Format, Msg) ->
+    io:format(Format, Msg),
     ok.
 
-debug(_Format, _Msg) ->
+debug(Format, Msg) ->
+    io:format(Format, Msg),
     ok.
 
-error(_Format, _Msg) ->
+error(Format, Msg) ->
+    io:format(Format, Msg),
     ok.
 
