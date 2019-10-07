@@ -26,12 +26,21 @@ init(_Args) ->
         period => 5
     },
     Children = [
+        db_mnesia_sup_config(),
         parser_worker_sup_config(),
         parser_server_config(),
         http_server_server_config(), 
         aprs_client_server_config()
     ],
     {ok, {RestartStrategy, Children}}.
+
+db_mnesia_sup_config()->
+    #{id => db_mnesia_sup,
+        start => {db_mnesia_sup, start_link, []},
+        restart => permanent,
+        shutdown => brutal_kill,
+        type => supervisor,
+        modules => [db_mnesia_sup]}.
 
 http_server_server_config() ->
     #{id => http_server_server,

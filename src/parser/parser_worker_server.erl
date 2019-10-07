@@ -58,6 +58,4 @@ code_change(_OldVsn, State, _Extra) ->
 process_parse_line_result({nomatch, _}) -> 
    ok;
 process_parse_line_result({Pattern, Record}) ->
-   ogn_collector_logger:debug("Pattern ~p, Record ~p~n", [Pattern, Record]);
-process_parse_line_result({Pattern, Record}) ->
    ogn_collector_logger:debug("Pattern ~p, Record ~p~n", [Pattern, Record]). 
