@@ -8,6 +8,8 @@
 -define(SERVER, ?MODULE).
 
 start_link() ->
+    ok = mnesia:create_schema([node()]),
+    ok = mnesia:start(),
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 init(_Args) ->
