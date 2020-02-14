@@ -5,8 +5,6 @@
 -export([start/0, start_link/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--record(state, {parsers}).
-
 -define(SERVER, ?MODULE).
 
 %% api
@@ -21,7 +19,7 @@ start_link() ->
 
 init(_Args) ->
    Parsers = line_parser:compile_parsers(),
-   {ok, #state{parsers = Parsers}}.
+   {ok, #{parsers => Parsers}}.
 
 handle_call(stop, _From, State) ->
    {stop, normal, stopped, State};
@@ -33,7 +31,7 @@ handle_cast({server_name, _ServerName}, State) ->
    % {ok, Pid} = parser_worker_sup:start_parser_worker(),
    % gen_server:cast(Pid, {server_name, ServerName}),
    {noreply, State};
-handle_cast({raw_line, Line}, #state{parsers = Parsers} = State) ->
+handle_cast({raw_line, Line}, #{parsers := Parsers} = State) ->
    parser_worker_server:parse_raw_line(Line, Parsers),
    {noreply, State}.
 
