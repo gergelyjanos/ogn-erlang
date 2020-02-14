@@ -7,8 +7,6 @@
 
 -export([parse_raw_line/2]).
 
--record(state, {parsers}).
-
 %% api
 
 parse_raw_line(<<"#",Comment/binary>>, Parsers) ->
@@ -29,7 +27,7 @@ start_link() ->
    gen_server:start_link(?MODULE, [], []).
 
 init([Parsers]) ->
-   {ok, #state{parsers = Parsers}}.
+   {ok, #{parsers => Parsers}}.
 
 handle_call(stop, _From, State) ->
    {stop, normal, stopped, State};
@@ -39,7 +37,7 @@ handle_call(_Request, _From, State) ->
 
 handle_cast({server_name, _ServerName}, State) ->
    {stop, normal, State};
-handle_cast({line, Line}, #state{parsers = Parsers} = State) ->
+handle_cast({line, Line}, #{parsers := Parsers} = State) ->
    process_parse_line_result(line_parser:parse_line(Line, Parsers)),
    {stop, normal, State};
 handle_cast({comment, Comment}, State) ->
