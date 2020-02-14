@@ -6,7 +6,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -export([handle_continue/2]).
 
--record(state, {socket, line_count :: integer(), keepalive_time :: integer()}).
+% -record(state, {socket, line_count :: integer(), keepalive_time :: integer()}).
 
 -define(APRS_PORT, 10152).
 -define(APRS_HOST, "aprs.glidernet.org").
@@ -39,28 +39,38 @@ stop() ->
 -spec init(_Args) -> Result
     when
         _Args :: term(),
-        Result :: {ok, #state{}, {continue, connect}}.
+        Result :: {ok, #{}, {continue, connect}}.
 init(_Args) ->
-    {ok, #state{}, {continue, connect}}.
+    {ok, #{}, {continue, connect}}.
 
 -spec handle_continue(connect | login | run, State) -> Result
     when
-        State :: #state{},
+        State :: #{},
         Result :: term().
 handle_continue(connect, State) ->
-    process_connect(gen_tcp:connect(?APRS_HOST, ?APRS_PORT, ?PASSIVE_MODE_CONNECTION_OPTIONS, ?CONNECT_TIMEOUT), State);
-handle_continue(login, State=#state{socket=Socket}) ->
+    process_connect(
+        gen_tcp:connect(
+            ?APRS_HOST, 
+            ?APRS_PORT, 
+            ?PASSIVE_MODE_CONNECTION_OPTIONS, 
+            ?CONNECT_TIMEOUT), 
+        State);
+handle_continue(login, #{socket := Socket} = State) ->
     {ok, ServerName} = gen_tcp:recv(Socket, 0, ?RECV_TIMEOUT),
     ogn_collector_parser_api:parse_server_name(ServerName),
     ok = gen_tcp:send(Socket, ?LOGIN_MESSAGE),
-    {noreply, State#state{keepalive_time = erlang:system_time(second)}, {continue, run}};
-handle_continue(run, #state{socket=Socket}=State) ->
+    {
+        noreply, 
+        State#{keepalive_time => erlang:system_time(second)}, 
+        {continue, run}
+    };
+handle_continue(run, #{socket := Socket} = State) ->
     process_recv(gen_tcp:recv(Socket, 0, ?RECV_TIMEOUT), State).
 
 -spec handle_call(stop, _From, State) -> Result
     when
         _From :: term(),
-        State :: #state{},
+        State :: #{},
         Result :: {stop, normal, stopped, State}.
 handle_call(stop, _From, State) ->
     {stop, normal, stopped, State}.
@@ -68,7 +78,7 @@ handle_call(stop, _From, State) ->
 -spec handle_cast(_Msg, State) -> Result   
     when
         _Msg :: term(),
-        State :: #state{},
+        State :: #{},
         Result :: {noreply, State}.
 handle_cast(_Msg, State) ->
     {noreply, State}.
@@ -76,7 +86,7 @@ handle_cast(_Msg, State) ->
 -spec handle_info(_Info, State) -> Result   
     when
         _Info :: term(),
-        State :: #state{},
+        State :: #{},
         Result :: term().
 handle_info(_Info, State) ->
     {noreply, State}.
@@ -84,7 +94,7 @@ handle_info(_Info, State) ->
 -spec terminate(_Reason, _State) -> Result   
     when
         _Reason :: term(),
-        _State :: #state{},
+        _State :: #{},
         Result :: term().
 terminate(_Reason, _State) ->
     ok.
@@ -92,7 +102,7 @@ terminate(_Reason, _State) ->
 -spec code_change(_OldVsn, State, _Extra) -> Result   
     when
         _OldVsn :: term(),
-        State :: #state{},
+        State :: #{},
         _Extra :: term(),
         Result :: term().
 code_change(_OldVsn, State, _Extra) ->
@@ -106,12 +116,14 @@ code_change(_OldVsn, State, _Extra) ->
     when
         Line :: binary(),
         Reason :: term(),
-        State :: #state{},
+        State :: #{},
         Result :: term().
-process_recv({ok, Line}, #state{line_count=LineCount}=State) -> 
+process_recv({ok, Line}, #{line_count := LineCount} = State) -> 
     ogn_collector_parser_api:parse_raw_line(Line),
-    process_keepalive(State#state{line_count = LineCount+1}, erlang:system_time(second));
-process_recv({error, timeout}, #state{}=State) -> 
+    process_keepalive(
+        State#{line_count => LineCount+1}, 
+        erlang:system_time(second));
+process_recv({error, timeout}, #{} = State) -> 
     send_keepalive(State);
 process_recv({error, closed}, State) -> 
     {stop, closed, State};
@@ -120,31 +132,39 @@ process_recv({error, Reason}, State) ->
 
 -spec send_keepalive(State) -> Result
     when
-        State :: #state{},
-        Result :: {noreply, #state{}, {continue, run}}.
-send_keepalive(#state{socket=Socket}=State) ->
+        State :: #{},
+        Result :: {noreply, #{}, {continue, run}}.
+send_keepalive(#{socket := Socket} = State) ->
     ogn_collector_logger:info("send #keepalive~n"),
     gen_tcp:send(Socket, "#keepalive"),
-    {noreply, State#state{keepalive_time = erlang:system_time(second)}, {continue, run}}.
+    {
+        noreply, 
+        State#{keepalive_time => erlang:system_time(second)}, 
+        {continue, run}
+    }.
 
 -spec process_keepalive(State, SystemTime) -> Result
     when
-        State :: #state{},
+        State :: #{},
         SystemTime :: integer(),
-        Result :: {noreply, #state{}, {continue, run}}.
-process_keepalive(#state{keepalive_time=KeepAliveTime}=State, SystemTime)
+        Result :: {noreply, #{}, {continue, run}}.
+process_keepalive(#{keepalive_time := KeepAliveTime} = State, SystemTime)
     when SystemTime - ?KEEPALIVE_TIMEOUT > KeepAliveTime ->
         send_keepalive(State);
-process_keepalive(#state{}=State, _SystemTime) ->
+process_keepalive(#{} = State, _SystemTime) ->
     {noreply, State, {continue, run}}.
 
 -spec process_connect({ok, Socket} | {error, Reason}, State) -> Result
     when
         Socket :: term(),
         Reason :: term(),
-        State :: #state{},
+        State :: #{},
         Result :: {noreply, State, {continue, run}} | {stop, Reason, State}.
-process_connect({ok, Socket}, #state{}=State) ->
-    {noreply, State#state{socket=Socket, line_count=0}, {continue, login}};
+process_connect({ok, Socket}, #{} = State) ->
+    {
+        noreply, 
+        State#{socket => Socket, line_count => 0}, 
+        {continue, login}
+    };
 process_connect({error, Reason}, State) ->
     {stop, Reason, State}.
