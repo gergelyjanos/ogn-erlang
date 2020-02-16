@@ -1,0 +1,5 @@
+@startuml
+title APRS MEssage
+APRS_Server -> aprs_client : line
+aprs_client -> parser : line
+@enduml
