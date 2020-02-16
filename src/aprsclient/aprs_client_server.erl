@@ -6,6 +6,8 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -export([handle_continue/2]).
 
+-include("../ogn_collector.hrl").
+
 % -record(state, {socket, line_count :: integer(), keepalive_time :: integer()}).
 
 -define(APRS_PORT, 10152).
@@ -135,7 +137,7 @@ process_recv({error, Reason}, State) ->
         State :: #{},
         Result :: {noreply, #{}, {continue, run}}.
 send_keepalive(#{socket := Socket} = State) ->
-    ogn_collector_logger:info("send #keepalive~n"),
+    ?LOG_INFO("send #keepalive"),
     gen_tcp:send(Socket, "#keepalive"),
     {
         noreply, 

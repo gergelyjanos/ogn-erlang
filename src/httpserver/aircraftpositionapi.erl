@@ -5,15 +5,18 @@
 
 -module(aircraftpositionapi).
 -export([list/3, count/3]).
+
+-include("../ogn_collector.hrl").
 -include("macros.hrl").
 -include("../aircraftPositionRecord.hrl").
+
 
 -define(HEADER, ["Content-Type: application/json\r\n\r\n"]).
 
 % http://localhost:8080/api/aircraftpositionapi/list
 list(SessionID, _Env, _Input) -> 
     ?HTTPRequestLog(SessionID),
-    ogn_collector_logger:debug("HTTP request: ~p ~p~n", [?MODULE, ?FUNCTION_NAME]),
+    ?LOG_DEBUG("HTTP request: ~p ~p", [?MODULE, ?FUNCTION_NAME]),
     DbList = aircraftPositionDb:list(),
     mod_esi:deliver(SessionID, ?HEADER), 
     mod_esi:deliver(SessionID, [json:listOfRecordsToJson(record_info(fields, aircraftPosition), DbList)])
@@ -22,7 +25,7 @@ list(SessionID, _Env, _Input) ->
 % http://localhost:8080/api/aircraftpositionapi/count
 count(SessionID, _Env, _Input) -> 
     ?HTTPRequestLog(SessionID),
-    ogn_collector_logger:debug("HTTP request: ~p ~p~n", [?MODULE, ?FUNCTION_NAME]),
+    ?LOG_DEBUG("HTTP request: ~p ~p", [?MODULE, ?FUNCTION_NAME]),
     mod_esi:deliver(SessionID, ?HEADER), 
     mod_esi:deliver(SessionID, [json:integerToJson("count", aircraftPositionDb:count())])
 .

@@ -5,6 +5,8 @@
 
 -module(receiverpositionapi).
 -export([list/3, count/3, receiver/3]).
+
+-include("../ogn_collector.hrl").
 -include("macros.hrl").
 -include("../receiverPositionRecord.hrl").
 

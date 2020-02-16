@@ -4,8 +4,9 @@
 %% API
 -export([start/1, start_link/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
-
 -export([parse_raw_line/2]).
+
+-include("../ogn_collector.hrl").
 
 %% api
 
@@ -41,7 +42,7 @@ handle_cast({line, Line}, #{parsers := Parsers} = State) ->
    process_parse_line_result(line_parser:parse_line(Line, Parsers)),
    {stop, normal, State};
 handle_cast({comment, Comment}, State) ->
-   ogn_collector_logger:debug("~p:cast comment ~p~n", [?MODULE, Comment]),
+   ?LOG_DEBUG("~p:cast comment ~p", [?MODULE, Comment]),
    {stop, normal, State}.
 
 handle_info(_Info, State) ->
@@ -56,4 +57,4 @@ code_change(_OldVsn, State, _Extra) ->
 process_parse_line_result({nomatch, _}) -> 
    ok;
 process_parse_line_result({Pattern, Record}) ->
-   ogn_collector_logger:debug("Pattern ~p, Record ~p~n", [Pattern, Record]). 
+   ?LOG_DEBUG("Pattern ~p, Record ~p", [Pattern, Record]). 

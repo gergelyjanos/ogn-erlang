@@ -9,6 +9,9 @@
 %% API
 -export([start/0, stop/0, start_link/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
+
+-include("../ogn_collector.hrl").
+
 -record(state, {listen}).
 
 start() ->
@@ -22,7 +25,7 @@ start_link() ->
 
 init(_Args) ->
    Inet = inets:start(), % TODO error, already started?
-   ogn_collector_logger:debug("inet:start ~p~n", [Inet]),
+   ?LOG_DEBUG("inet:start ~p", [Inet]),
    {ok, Pid} = inets:start(httpd, 
       [
          {modules, [ 
@@ -46,7 +49,7 @@ init(_Args) ->
          {mime_types, [{"html","text/html"}, {"json", "application/json"}]}
       ]
    ),
-   ogn_collector_logger:debug("httpd ~p ~p~n", [Pid, httpd:info(Pid)]),
+   ?LOG_DEBUG("httpd ~p ~p", [Pid, httpd:info(Pid)]),
    {ok, #state{listen=ok}}.
 
 handle_call(stop, _From, State) ->
