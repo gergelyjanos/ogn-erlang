@@ -56,5 +56,12 @@ code_change(_OldVsn, State, _Extra) ->
 
 process_parse_line_result(nomatch) -> 
    ok;
-process_parse_line_result({Pattern, Record}) ->
-   ?LOG_DEBUG("Pattern ~p, Record ~p", [Pattern, Record]). 
+process_parse_line_result({aircraft_position, Record}) ->
+   ?LOG_DEBUG("=== AIRCRAFT POS ~p", [Record]),
+   ok;
+process_parse_line_result({receiver_position, Record}) ->
+   ?LOG_DEBUG("--- RECEIVER POS ~p", [Record]),
+   ok;
+process_parse_line_result({receiver_status, Record}) ->
+   ?LOG_DEBUG("+++ RECEIVER STA ~p", [Record]),
+   ok. 

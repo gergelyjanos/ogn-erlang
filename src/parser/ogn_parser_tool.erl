@@ -18,7 +18,9 @@ get_pattern(receiver_status) ->
 get_pattern(timestamp) ->
     ?TIMESTAMP_PATTERN;
 get_pattern(latlon) ->
-    ?LATLON_PATTERN.
+    ?LATLON_PATTERN;
+get_pattern(ram) ->
+    ?RAM_PATTERN.
 
 list_to_latlon(Text, {Regex, _Namelist}) ->
     case re:run(Text, Regex, ?RUN_OPTIONS) of

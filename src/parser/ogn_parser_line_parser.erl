@@ -15,7 +15,8 @@ compile_parsers()->
         receiver_status => re_compile(receiver_status),
         aircraft_comment => re_compile(aircraft_comment),
         timestamp => re_compile(timestamp),
-        latlon => re_compile(latlon)
+        latlon => re_compile(latlon),
+        ram => re_compile(ram)
     }.
 
 -spec parse_line(Line, Parsers) -> Result
@@ -24,7 +25,7 @@ compile_parsers()->
         Parsers :: map(),
         Result :: nomatch | {atom(), any()}.
 parse_line(Line, Parsers) ->
-    parse_line_ordered(Line, Parsers, [aircraft_position, receiver_position, receiver_status]).
+    parse_line_ordered(Line, Parsers, [aircraft_position, receiver_status, receiver_position]).
 
 %% @private
 parse_line_ordered(_, _, []) -> nomatch;
@@ -42,6 +43,10 @@ parse_line_ordered(Line, Parsers, [Pattern | Tail]) ->
 %% @private
 create_result(aircraft_position, LineValues, Parsers) ->
     ogn_parser_aircraft_position_parser:create_aircraft_position_record(LineValues, Parsers);
+create_result(receiver_position, LineValues, Parsers) ->
+    ogn_parser_receiver_position_parser:create_receiver_position_record(LineValues, Parsers);
+create_result(receiver_status, LineValues, Parsers) ->
+    ogn_parser_receiver_status_parser:create_receiver_status_record(LineValues, Parsers);
 create_result(Pattern, LineValues, _OtherParsers) ->
     {Pattern, LineValues}.
 
@@ -50,4 +55,3 @@ re_compile(Pattern) ->
     {ok, Regex} = re:compile(ogn_parser_tool:get_pattern(Pattern), ?COMPILE_OPTIONS),
     {namelist, NamelistBinary} = re:inspect(Regex, namelist),
     {Regex, NamelistBinary}.
-

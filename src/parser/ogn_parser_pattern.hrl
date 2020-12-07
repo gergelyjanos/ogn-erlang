@@ -5,6 +5,8 @@
 -define(RECEIVERSTATUS_PATTERN, "^(?P<receiver>.+)>(?P<message_format>.+),.+,.+,(?P<server>.+):>(?P<timestamp>\\d+)h\\s+(?P<version>.+)\\s+CPU:(?P<cpu>\\d+\\.\\d+)\s+RAM:(?P<ram>\\S+)\\s+(?P<other>.*)$").
 -define(TIMESTAMP_PATTERN, "^(\\d\\d)(\\d\\d)(\\d\\d)$").
 -define(LATLON_PATTERN, "^(?P<degree>\\d{2,3})(?P<minute>\\d{2})\\.(?P<second>\\d{2})(?P<globe>[EWSN])$").
+-define(RAM_PATTERN, "^(?P<used_ram>[0-9\\.]+)\\/(?P<all_ram>[0-9\\.]+)(?P<ram_unit>.+)$").
+
 
 -define(DEVICE_KEY, <<"device">>).
 -define(MESSAGE_FORMAT_KEY, <<"message_format">>).
@@ -27,3 +29,7 @@
 -define(MINUTE_KEY, <<"minute">>).
 -define(SECOND_KEY, <<"second">>).
 -define(GLOBE_KEY, <<"globe">>).
+-define(RAM_KEY, <<"ram">>).
+-define(USED_RAM_KEY, <<"used_ram">>).
+-define(ALL_RAM_KEY, <<"all_ram">>).
+-define(RAM_UNIT_KEY, <<"ram_unit">>).

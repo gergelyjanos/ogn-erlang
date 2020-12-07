@@ -20,3 +20,4 @@ rebar3.crashdump
 *~
 *.LOG
 *.DAT
+ttb_last_config
