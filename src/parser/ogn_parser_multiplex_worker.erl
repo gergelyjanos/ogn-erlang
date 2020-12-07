@@ -1,4 +1,4 @@
--module(parser_server).
+-module(ogn_parser_multiplex_worker).
 -behaviour(gen_server).
 
 %% API
@@ -18,7 +18,7 @@ start_link() ->
    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 init(_Args) ->
-   Parsers = line_parser:compile_parsers(),
+   Parsers = ogn_parser_line_parser:compile_parsers(),
    {ok, #{parsers => Parsers}}.
 
 handle_call(stop, _From, State) ->
@@ -28,11 +28,11 @@ handle_call(_Request, _From, State) ->
     {reply, ok, State}.
 
 handle_cast({server_name, _ServerName}, State) ->
-   % {ok, Pid} = parser_worker_sup:start_parser_worker(),
+   % {ok, Pid} = ogn_parser_process_message_sup:start_parser_worker(),
    % gen_server:cast(Pid, {server_name, ServerName}),
    {noreply, State};
 handle_cast({raw_line, Line}, #{parsers := Parsers} = State) ->
-   parser_worker_server:parse_raw_line(Line, Parsers),
+   ogn_parser_process_message_worker:parse_raw_line(Line, Parsers),
    {noreply, State}.
 
 handle_info(_Info, State) ->

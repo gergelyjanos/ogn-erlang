@@ -7,7 +7,13 @@
         {registered, []},
         {mod, {ogn_collector_app, []}},
         {applications, [kernel, stdlib]},
-        {env, []},
+        {env, 
+            [
+                {aprs_host, "aprs.glidernet.org"}, 
+                {aprs_port, 10152},
+                {aprs_login_message, "user td1990 pass -1 vers ogn_erlang 1.0.0\r\n"}
+            ]
+        },
         {modules, []},
         {licences, []},
         {links, []}

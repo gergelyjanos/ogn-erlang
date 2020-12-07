@@ -5,9 +5,9 @@
 
 -module(parser).
 -export([start/0]).
--include("../aircraftPositionRecord.hrl").
--include("../receiverPositionRecord.hrl").
--include("../receiverStatusRecord.hrl").
+-include("aircraftPositionRecord.hrl").
+-include("receiverPositionRecord.hrl").
+-include("receiverStatusRecord.hrl").
 
 -define(aircraftData, Device, MessageFormat, Receiver, Timestamp, Latitude, Longitude, Heading, GroundSpeed, Altitude, Comment).
 -define(aircraftAdditionalData, DeviceId, ClimbRate, TurnRate).

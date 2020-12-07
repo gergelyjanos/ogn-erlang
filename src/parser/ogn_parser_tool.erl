@@ -1,8 +1,24 @@
--module(parser_tool).
+-module(ogn_parser_tool).
 
--export([list_to_latlon/2, parse_aircraft_comment/2]).
+-export([list_to_latlon/2]).
+-export([get_pattern/1]).
+
+-include("./ogn_parser_pattern.hrl").
 
 -define(RUN_OPTIONS, [{capture, all_but_first, list}]).
+
+get_pattern(aircraft_position) -> 
+    ?AIRCRAFT_POSITION_PATTERN;
+get_pattern(aircraft_comment) ->
+    ?AIRCRAFTCOMMENT_PATTERN;
+get_pattern(receiver_position) ->
+    ?RECEIVERPOSITION_PATTERN;
+get_pattern(receiver_status) ->
+    ?RECEIVERSTATUS_PATTERN;
+get_pattern(timestamp) ->
+    ?TIMESTAMP_PATTERN;
+get_pattern(latlon) ->
+    ?LATLON_PATTERN.
 
 list_to_latlon(Text, {Regex, _Namelist}) ->
     case re:run(Text, Regex, ?RUN_OPTIONS) of
@@ -28,10 +44,3 @@ latlontext_to_number([Degree, Minute, Second, Globe]) ->
             {-DD, degree}
     end.
 
-parse_aircraft_comment(Data, {Regex, _}) ->
-    case re:run(Data, Regex, ?RUN_OPTIONS) of
-        {match, [DeviceId, ClimbRate, TurnRate]} ->
-            {DeviceId, {list_to_integer(ClimbRate), footpmin}, {list_to_float(TurnRate), tr}};
-        nomatch -> 
-            {"", {0.0, footpmin}, {0.0, tr}}
-    end.

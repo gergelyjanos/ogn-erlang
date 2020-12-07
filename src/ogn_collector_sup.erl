@@ -27,49 +27,59 @@ init(_Args) ->
     },
     Children = [
         db_mnesia_sup_config(),
-        parser_worker_sup_config(),
-        parser_server_config(),
+        ogn_parser_process_message_sup_config(),
+        ogn_parser_multiplex_worker_config(),
         http_server_server_config(), 
-        aprs_client_server_config()
+        ogn_aprs_client_worker_config()
     ],
     {ok, {RestartStrategy, Children}}.
 
 db_mnesia_sup_config()->
-    #{id => db_mnesia_sup,
+    #{
+        id => db_mnesia_sup,
         start => {db_mnesia_sup, start_link, []},
         restart => permanent,
         shutdown => brutal_kill,
         type => supervisor,
-        modules => [db_mnesia_sup]}.
+        modules => [db_mnesia_sup]
+    }.
 
 http_server_server_config() ->
-    #{id => http_server_server,
+    #{
+        id => http_server_server,
         start => {http_server_server, start_link, []},
         restart => permanent,
         shutdown => brutal_kill,
         type => worker,
-        modules => [http_server_server]}.
+        modules => [http_server_server]
+    }.
 
-aprs_client_server_config() ->
-    #{id => aprs_client_server,
-        start => {aprs_client_server, start_link, []},
+ogn_aprs_client_worker_config() ->
+    #{
+        id => ogn_aprs_client_worker,
+        start => {ogn_aprs_client_worker, start_link, []},
         restart => permanent,
         shutdown => brutal_kill,
         type => worker,
-        modules => [aprs_client_server]}.
+        modules => [ogn_aprs_client_worker]
+    }.
 
-parser_worker_sup_config() ->
-    #{id => parser_worker_sup,
-        start => {parser_worker_sup, start_link, []},
+ogn_parser_process_message_sup_config() ->
+    #{
+        id => ogn_parser_process_message_sup,
+        start => {ogn_parser_process_message_sup, start_link, []},
         restart => permanent,
         shutdown => brutal_kill,
         type => supervisor,
-        modules => [parser_worker_sup]}.
+        modules => [ogn_parser_process_message_sup]
+    }.
 
-parser_server_config() ->
-    #{id => parser_server,
-        start => {parser_server, start_link, []},
+ogn_parser_multiplex_worker_config() ->
+    #{
+        id => ogn_parser_multiplex_worker,
+        start => {ogn_parser_multiplex_worker, start_link, []},
         restart => permanent,
         shutdown => brutal_kill,
         type => worker,
-        modules => [parser_server]}.
+        modules => [ogn_parser_multiplex_worker]
+    }.

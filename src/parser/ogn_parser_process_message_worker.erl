@@ -1,4 +1,4 @@
--module(parser_worker_server).
+-module(ogn_parser_process_message_worker).
 -behaviour(gen_server).
 
 %% API
@@ -10,12 +10,12 @@
 
 %% api
 
-parse_raw_line(<<"#",Comment/binary>>, Parsers) ->
-   {ok, Pid} = parser_worker_sup:start_parser_worker(Parsers),
+parse_raw_line(<<"#", Comment/binary>>, Parsers) ->
+   {ok, Pid} = ogn_parser_process_message_sup:start_parser_worker(Parsers),
    gen_server:cast(Pid, {comment, Comment}),
    ok;
 parse_raw_line(Line, Parsers) ->
-   {ok, Pid} = parser_worker_sup:start_parser_worker(Parsers),
+   {ok, Pid} = ogn_parser_process_message_sup:start_parser_worker(Parsers),
    gen_server:cast(Pid, {line, Line}),
    ok.
 
@@ -39,7 +39,7 @@ handle_call(_Request, _From, State) ->
 handle_cast({server_name, _ServerName}, State) ->
    {stop, normal, State};
 handle_cast({line, Line}, #{parsers := Parsers} = State) ->
-   process_parse_line_result(line_parser:parse_line(Line, Parsers)),
+   process_parse_line_result(ogn_parser_line_parser:parse_line(Line, Parsers)),
    {stop, normal, State};
 handle_cast({comment, Comment}, State) ->
    ?LOG_DEBUG("~p:cast comment ~p", [?MODULE, Comment]),
@@ -54,7 +54,7 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
    {ok, State}.
 
-process_parse_line_result({nomatch, _}) -> 
+process_parse_line_result(nomatch) -> 
    ok;
 process_parse_line_result({Pattern, Record}) ->
    ?LOG_DEBUG("Pattern ~p, Record ~p", [Pattern, Record]). 

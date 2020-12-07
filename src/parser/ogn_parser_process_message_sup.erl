@@ -1,4 +1,4 @@
--module(parser_worker_sup).
+-module(ogn_parser_process_message_sup).
 -behaviour(supervisor).
 
 -export([start_link/0]).
@@ -25,15 +25,15 @@ init(_Args) ->
         period => 5
     },
     Children = [
-        parser_worker_server_config()
+        ogn_parser_process_message_worker_config()
     ],
     {ok, {RestartStrategy, Children}}.
 
-parser_worker_server_config() ->
-    #{id => parser_worker_server,
-        start => {parser_worker_server, start, []},
+ogn_parser_process_message_worker_config() ->
+    #{id => ogn_parser_process_message_worker,
+        start => {ogn_parser_process_message_worker, start, []},
         restart => transient,
         shutdown => brutal_kill,
         type => worker,
-        modules => [parser_worker_server]}.
+        modules => [ogn_parser_process_message_worker]}.
 
