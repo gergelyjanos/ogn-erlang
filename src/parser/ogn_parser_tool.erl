@@ -1,7 +1,11 @@
 -module(ogn_parser_tool).
 
--export([list_to_latlon/2]).
--export([get_pattern/1]).
+-export(
+    [
+        list_to_latlon/2, 
+        list_to_integer_to_float/1, 
+        get_pattern/1
+    ]).
 
 -include("./ogn_parser_pattern.hrl").
 
@@ -48,3 +52,5 @@ latlontext_to_number([Degree, Minute, Second, Globe]) ->
             {-DD, degree}
     end.
 
+list_to_integer_to_float(Value) ->
+    list_to_integer(Value) + 0.0.

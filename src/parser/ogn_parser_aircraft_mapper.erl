@@ -30,13 +30,13 @@ create_record([{?LONGITUDE_KEY, Value} | Tail], #{latlon := LatLonParser} = Pars
     Lon = ogn_parser_tool:list_to_latlon(Value, LatLonParser),
     create_record(Tail, Parsers, Record#{geo_coord := GeoCoord#{longitude => Lon, lon => Value}});
 create_record([{?ALTITUDE_KEY, Value} | Tail], Parsers, #{geo_coord := GeoCoord} = Record) ->
-    Altitude = {list_to_integer(Value), foot},
+    Altitude = {ogn_parser_tool:list_to_integer_to_float(Value), foot},
     create_record(Tail, Parsers, Record#{geo_coord := GeoCoord#{altitude => Altitude}});
 create_record([{?HEADING_KEY, Value} | Tail], Parsers, #{speed := Speed} = Record) ->
-    Heading = {list_to_integer(Value), d},
+    Heading = {ogn_parser_tool:list_to_integer_to_float(Value), d},
     create_record(Tail, Parsers, Record#{speed := Speed#{heading => Heading}});
 create_record([{?GROUND_SPEED_KEY, Value} | Tail], Parsers, #{speed := Speed} = Record) ->
-    GroundSpeed = {list_to_integer(Value), kmph},
+    GroundSpeed = {ogn_parser_tool:list_to_integer_to_float(Value), kmph},
     create_record(Tail, Parsers, Record#{speed := Speed#{ground_speed => GroundSpeed}});
 create_record([{?COMMENT_KEY, Value} | Tail], #{aircraft_comment := {CommentRegex, _}} = Parsers, Record) ->
     Parsed = re:run(Value, CommentRegex, ?RUN_OPTIONS),
@@ -49,9 +49,9 @@ parse_aircraft_comment({match, [DeviceId, ClimbRate, TurnRate]}, #{speed := Spee
     Record#{
         device_id => DeviceId,
         speed := Speed#{
-            climb_rate => {list_to_integer(ClimbRate), footpmin}, 
+            climb_rate => {ogn_parser_tool:list_to_integer_to_float(ClimbRate), footpmin}, 
             turn_rate => {list_to_float(TurnRate), tr}
-        }    
+        }
     };
 parse_aircraft_comment(nomatch, Record) ->
     Record.

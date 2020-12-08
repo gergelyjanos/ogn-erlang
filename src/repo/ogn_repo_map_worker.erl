@@ -23,6 +23,20 @@ handle_call(db_size, _From, #{aircrafts := Aircrafts, receivers := Receivers} = 
       receiver_map_size => maps:size(Receivers)
    },
    {reply, Size, State};
+handle_call({get_aircraft, AircraftId}, _From, #{aircrafts := Aircrafts} = State) ->
+   Aircraft0 = maps:get(AircraftId, Aircrafts, {not_found, AircraftId}),
+   {reply, Aircraft0, State};
+handle_call({get_receiver, ReceiverId}, _From, #{receivers := Receivers} = State) ->
+   Receiver0 = maps:get(ReceiverId, Receivers, {not_found, ReceiverId}),
+   {reply, Receiver0, State};
+handle_call({list_aircraft_ids}, _From, #{aircrafts := Aircrafts} = State) ->
+   {reply, maps:keys(Aircrafts), State};
+handle_call({list_receiver_ids}, _From, #{receivers := Receivers} = State) ->
+   {reply, maps:keys(Receivers), State};
+handle_call({list_aircrafts}, _From, #{aircrafts := Aircrafts} = State) ->
+   {reply, Aircrafts, State};
+handle_call({list_receivers}, _From, #{receivers := Receivers} = State) ->
+   {reply, Receivers, State};
 handle_call(stop, _From, State) ->
    {stop, normal, stopped, State}.
 

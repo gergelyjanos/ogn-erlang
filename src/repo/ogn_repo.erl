@@ -3,53 +3,55 @@
 -export([
     update_aircraft/1,
     update_receiver/1,
-    info/0
-    % add_receiver_position/1,
-    % add_receiver_status/1,
-    % get_aircraft_last_position/1,
-    % get_receiver_last_position/1,
-    % list_aircraft_position/2,
-    % list_aircrafts_live_position/0,
-    % list_receivers_live_position/0
+    info/0,
+    get_aircraft/1,
+    get_receiver/1,
+    list_aircraft_ids/0,
+    list_receiver_ids/0,
+    list_aircrafts/0,
+    list_receivers/0
 ]).
 
 -include("../ogn_collector.hrl").
 
-
 update_aircraft(Record) ->
-    gen_server:cast(ogn_repo_map_worker, {update_aircraft, Record}),
+    cast({update_aircraft, Record}),
     % ?LOG_DEBUG("UPDATE AIRCRAFT ~p", [Record]),
     ok.
 
 update_receiver(Record) ->
-    gen_server:cast(ogn_repo_map_worker, {update_receiver, Record}),
+    cast({update_receiver, Record}),
     % ?LOG_DEBUG("UPDATE RECEIVER ~p", [Record]),
     ok.
 
 info() ->
-    Size = gen_server:call(ogn_repo_map_worker, db_size),
-    ?LOG_INFO("REPO SIZE ~p", [Size]),
-    Size.
+    [
+        {aircrafts, call({list_aircrafts})},
+        {receivers, call({list_receivers})},
+        {db_size, call(db_size)}
+    ].
 
+get_aircraft(Id) ->
+    call({get_aircraft, Id}).
 
-% modify_receiver_position(_Position) ->
-%     ok.
+get_receiver(Id) ->
+    call({get_receiver, Id}).
 
-% modify_receiver_status(_Position) ->
-%     ok.
+list_aircraft_ids() ->
+    call({list_aircraft_ids}).
 
-% get_receiver_last_position(_Receiver) ->
-%     not_found.
+list_receiver_ids() ->
+    call({list_receiver_ids}).
 
-% get_aircraft_last_position(_Aircraft) ->
-%     not_found.
+list_aircrafts() ->
+    call({list_aircrafts}).
 
-% list_aircraft_position_history(_Aircraft, _Interval) ->
-%     [].
+list_receivers() ->
+    call({list_receivers}).
 
-% list_aircrafts_live_position() ->
-%     [].
+%% @private
+call(Args) ->
+    gen_server:call(ogn_repo_map_worker, Args).
 
-% list_receivers_live_position() ->
-%     [].
-
+cast(Args) ->
+    gen_server:cast(ogn_repo_map_worker, Args).

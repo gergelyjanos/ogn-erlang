@@ -38,7 +38,7 @@ create_record([{?LONGITUDE_KEY, Value} | Tail], #{latlon := LatLonParser} = Pars
     Lon = ogn_parser_tool:list_to_latlon(Value, LatLonParser),
     create_record(Tail, Parsers, Record#{geo_coord := GeoCoord#{longitude => Lon, lon => Value}});
 create_record([{?ALTITUDE_KEY, Value} | Tail], Parsers, #{geo_coord := GeoCoord} = Record) ->
-    Altitude = {list_to_integer(Value), foot},
+    Altitude = {ogn_parser_tool:list_to_integer_to_float(Value), foot},
     create_record(Tail, Parsers, Record#{geo_coord := GeoCoord#{altitude => Altitude}});
 create_record([_ | Tail], Parsers, Record) ->
     create_record(Tail, Parsers, Record).
