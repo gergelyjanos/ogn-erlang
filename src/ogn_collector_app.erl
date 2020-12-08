@@ -12,7 +12,7 @@
 -include("ogn_collector.hrl").
 
 start(_Type, _Args) ->
-    logger:set_primary_config(level, all),
+    logger:set_primary_config(level, warning),
     ogn_collector_sup:start_link().
 
 stop(_State) ->

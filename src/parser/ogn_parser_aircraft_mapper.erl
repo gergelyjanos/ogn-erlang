@@ -1,12 +1,12 @@
--module(ogn_parser_aircraft_position_parser).
+-module(ogn_parser_aircraft_mapper).
 
--export([create_aircraft_position_record/2]).
+-export([create_aircraft_record/2]).
 
 -include("./ogn_parser_pattern.hrl").
 
 -define(RUN_OPTIONS, [{capture, all_but_first, list}]).
 
-create_aircraft_position_record(LineValues, Parsers) ->
+create_aircraft_record(LineValues, Parsers) ->
     create_record(LineValues, Parsers, #{geo_coord => #{}, speed => #{}}).
 
 %% @private

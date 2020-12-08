@@ -13,6 +13,8 @@ get_pattern(aircraft_comment) ->
     ?AIRCRAFTCOMMENT_PATTERN;
 get_pattern(receiver_position) ->
     ?RECEIVERPOSITION_PATTERN;
+get_pattern(receiver_position_status) ->
+    ?RECEIVERPOSITIONSTATUS_PATTERN;
 get_pattern(receiver_status) ->
     ?RECEIVERSTATUS_PATTERN;
 get_pattern(timestamp) ->

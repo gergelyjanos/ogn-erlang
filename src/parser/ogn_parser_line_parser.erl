@@ -11,6 +11,7 @@
 compile_parsers()->
     #{
         aircraft_position => re_compile(aircraft_position),
+        receiver_position_status => re_compile(receiver_position_status),
         receiver_position => re_compile(receiver_position),
         receiver_status => re_compile(receiver_status),
         aircraft_comment => re_compile(aircraft_comment),
@@ -42,11 +43,13 @@ parse_line_ordered(Line, Parsers, [Pattern | Tail]) ->
 
 %% @private
 create_result(aircraft_position, LineValues, Parsers) ->
-    ogn_parser_aircraft_position_parser:create_aircraft_position_record(LineValues, Parsers);
+    ogn_parser_aircraft_mapper:create_aircraft_record(LineValues, Parsers);
 create_result(receiver_position, LineValues, Parsers) ->
-    ogn_parser_receiver_position_parser:create_receiver_position_record(LineValues, Parsers);
+    ogn_parser_receiver_mapper:create_receiver_record(LineValues, Parsers);
+create_result(receiver_position_status, LineValues, Parsers) ->
+    ogn_parser_receiver_mapper:create_receiver_record(LineValues, Parsers);
 create_result(receiver_status, LineValues, Parsers) ->
-    ogn_parser_receiver_status_parser:create_receiver_status_record(LineValues, Parsers);
+    ogn_parser_receiver_mapper:create_receiver_record(LineValues, Parsers);
 create_result(Pattern, LineValues, _OtherParsers) ->
     {Pattern, LineValues}.
 

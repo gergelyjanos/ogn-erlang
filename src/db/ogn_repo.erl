@@ -1,7 +1,8 @@
 -module(ogn_repo).
 
 -export([
-    update_aircraft/1
+    update_aircraft/1,
+    update_receiver/1
     % add_receiver_position/1,
     % add_receiver_status/1,
     % get_aircraft_last_position/1,
@@ -16,6 +17,10 @@
 
 update_aircraft(Record) ->
     ?LOG_DEBUG("UPDATE AIRCRAFT ~p", [Record]),
+    ok.
+
+update_receiver(Record) ->
+    ?LOG_DEBUG("UPDATE RECEIVER ~p", [Record]),
     ok.
 
 

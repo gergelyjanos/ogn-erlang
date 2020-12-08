@@ -44,7 +44,7 @@ handle_cast({line, Line}, #{parsers := Parsers} = State) ->
    process_parse_line_result(ogn_parser_line_parser:parse_line(Line, Parsers), Line),
    {stop, normal, State};
 handle_cast({comment, Comment}, State) ->
-   ?LOG_DEBUG("~p:cast comment ~p", [?MODULE, Comment]),
+   ?LOG_WARNING("comment ~p", [Comment]),
    {stop, normal, State}.
 
 handle_info(_Info, State) ->
@@ -59,14 +59,17 @@ code_change(_OldVsn, State, _Extra) ->
 process_parse_line_result(nomatch, Line) -> 
    ?LOG_ERROR("NOMATCH ~p", [Line]),
    ok;
-process_parse_line_result({aircraft_position, Record0}, _Line) ->
-   ogn_repo:update_aircraft(Record0),
+process_parse_line_result({aircraft_position, Record}, _Line) ->
+   ogn_repo:update_aircraft(Record),
    ok;
 process_parse_line_result({receiver_position, Record}, _Line) ->
-   ?LOG_DEBUG("--- RECEIVER POS ~p", [Record]),
+   ogn_repo:update_receiver(Record),
    ok;
 process_parse_line_result({receiver_status, Record}, _Line) ->
-   ?LOG_DEBUG("+++ RECEIVER STA ~p", [Record]),
+   ogn_repo:update_receiver(Record),
+   ok;
+process_parse_line_result({receiver_position_status, Record}, _Line) ->
+   ogn_repo:update_receiver(Record),
    ok;
 process_parse_line_result(Res, Line) -> 
    ?LOG_ERROR("ERROR ~p ~p", [Res, Line]),
