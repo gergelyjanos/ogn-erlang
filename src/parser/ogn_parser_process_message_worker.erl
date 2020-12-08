@@ -41,7 +41,9 @@ handle_call(_Request, _From, State) ->
 handle_cast({server_name, _ServerName}, State) ->
    {stop, normal, State};
 handle_cast({line, Line}, #{parsers := Parsers} = State) ->
-   process_parse_line_result(ogn_parser_line_parser:parse_line(Line, Parsers), Line),
+   Record1 = ogn_parser_line_parser:parse_line(Line, Parsers),
+   Record2 = remove_empty_maps(Record1),
+   process_parse_line_result(Record2, Line),
    {stop, normal, State};
 handle_cast({comment, Comment}, State) ->
    ?LOG_WARNING("comment ~p", [Comment]),
@@ -74,3 +76,11 @@ process_parse_line_result({receiver_position_status, Record}, _Line) ->
 process_parse_line_result(Res, Line) -> 
    ?LOG_ERROR("ERROR ~p ~p", [Res, Line]),
    ok.
+
+%% @private
+remove_empty_maps(#{geo_coord := GeoCoord} = Record) when map_size(GeoCoord) == 0 ->
+    remove_empty_maps(maps:remove(geo_coord, Record));
+remove_empty_maps(#{speed := Speed} = Record) when map_size(Speed) == 0 ->
+    remove_empty_maps(maps:remove(speed, Record));
+remove_empty_maps(Record) ->
+    Record.

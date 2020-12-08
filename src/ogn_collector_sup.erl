@@ -28,7 +28,7 @@ init(_Args) ->
         period => 5
     },
     Children = [
-        db_mnesia_sup_config(),
+        ogn_repo_sup_config(),
         ogn_parser_process_message_sup_config(),
         ogn_parser_multiplex_worker_config(),
         http_server_server_config(), 
@@ -36,14 +36,14 @@ init(_Args) ->
     ],
     {ok, {RestartStrategy, Children}}.
 
-db_mnesia_sup_config()->
+ogn_repo_sup_config()->
     #{
-        id => db_mnesia_sup,
-        start => {db_mnesia_sup, start_link, []},
+        id => ogn_repo_sup,
+        start => {ogn_repo_sup, start_link, []},
         restart => ?RESTART_MODE,
         shutdown => brutal_kill,
         type => supervisor,
-        modules => [db_mnesia_sup]
+        modules => [ogn_repo_sup]
     }.
 
 http_server_server_config() ->

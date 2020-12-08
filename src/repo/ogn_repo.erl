@@ -2,7 +2,8 @@
 
 -export([
     update_aircraft/1,
-    update_receiver/1
+    update_receiver/1,
+    info/0
     % add_receiver_position/1,
     % add_receiver_status/1,
     % get_aircraft_last_position/1,
@@ -16,11 +17,17 @@
 
 
 update_aircraft(Record) ->
-    ?LOG_DEBUG("UPDATE AIRCRAFT ~p", [Record]),
+    gen_server:cast(ogn_repo_map_worker, {update_aircraft, Record}),
+    % ?LOG_DEBUG("UPDATE AIRCRAFT ~p", [Record]),
     ok.
 
 update_receiver(Record) ->
     ?LOG_DEBUG("UPDATE RECEIVER ~p", [Record]),
+    ok.
+
+info() ->
+    Size = gen_server:call(ogn_repo_map_worker, {db_size}),
+    ?LOG_INFO("REPO SIZE ~p", [Size]),
     ok.
 
 
