@@ -41,7 +41,7 @@ handle_call(_Request, _From, State) ->
 handle_cast({server_name, _ServerName}, State) ->
    {stop, normal, State};
 handle_cast({line, Line}, #{parsers := Parsers} = State) ->
-   process_parse_line_result(ogn_parser_line_parser:parse_line(Line, Parsers)),
+   process_parse_line_result(ogn_parser_line_parser:parse_line(Line, Parsers), Line),
    {stop, normal, State};
 handle_cast({comment, Comment}, State) ->
    ?LOG_DEBUG("~p:cast comment ~p", [?MODULE, Comment]),
@@ -56,58 +56,18 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
    {ok, State}.
 
-process_parse_line_result(nomatch) -> 
+process_parse_line_result(nomatch, Line) -> 
+   ?LOG_ERROR("NOMATCH ~p", [Line]),
    ok;
-process_parse_line_result({aircraft_position, #{?DEVICE_KEY := Device} = Position}) ->
-   Record0 = 
-   #{
-      aircraft_id => Device,
-      geo_coord => get_geo_coord(?GEO_COORD_KEYS, Position, #{}),
-      speed => get_speed(?SPEED_KEYS, Position, #{})
-   },
-   Record1 = add_aircraft_data(?AIRCRAFT_DATA_KEYS, Position, Record0),
-   ogn_repo:update_aircraft(Record1),
+process_parse_line_result({aircraft_position, Record0}, _Line) ->
+   ogn_repo:update_aircraft(Record0),
    ok;
-process_parse_line_result({receiver_position, Record}) ->
+process_parse_line_result({receiver_position, Record}, _Line) ->
    ?LOG_DEBUG("--- RECEIVER POS ~p", [Record]),
    ok;
-process_parse_line_result({receiver_status, Record}) ->
+process_parse_line_result({receiver_status, Record}, _Line) ->
    ?LOG_DEBUG("+++ RECEIVER STA ~p", [Record]),
-   ok. 
-
-get_geo_coord([?LATITUDE_KEY | T], #{?LATITUDE_KEY := {Latitude, Lat}} = Position, GeoCoord) ->
-   get_geo_coord(T, Position, GeoCoord#{latitude => Latitude, lat => Lat});
-get_geo_coord([?LONGITUDE_KEY | T], #{?LONGITUDE_KEY := {Longitude, Lon}} = Position, GeoCoord) ->
-   get_geo_coord(T, Position, GeoCoord#{longitude => Longitude, lon => Lon});
-get_geo_coord([?ALTITUDE_KEY | T], #{?ALTITUDE_KEY := Altitude} = Position, GeoCoord) ->
-   get_geo_coord(T, Position, GeoCoord#{altitude => Altitude});
-get_geo_coord([_ | T], Position, GeoCoord) ->
-   get_geo_coord(T, Position, GeoCoord);
-get_geo_coord([], _, GeoCoord) ->
-   GeoCoord.
-
-get_speed([?GROUND_SPEED_KEY | T], #{?GROUND_SPEED_KEY := GroundSpeed} = Position, Speed) ->
-   get_speed(T, Position, Speed#{ground_speed => GroundSpeed});
-get_speed([?HEADING_KEY | T], #{?HEADING_KEY := Heading} = Position, Speed) ->
-   get_speed(T, Position, Speed#{heading => Heading});
-get_speed([?CLIMB_RATE_KEY | T], #{?CLIMB_RATE_KEY := ClimbRate} = Position, Speed) ->
-   get_speed(T, Position, Speed#{climb_rate => ClimbRate});
-get_speed([?TURN_RATE_KEY | T], #{?TURN_RATE_KEY := TurnRate} = Position, Speed) ->
-   get_speed(T, Position, Speed#{turn_rate => TurnRate});
-get_speed([_ | T], Position, Speed) ->
-   get_speed(T, Position, Speed);
-get_speed([], _, Speed) ->
-   Speed.
-
-add_aircraft_data([?MESSAGE_FORMAT_KEY | T], #{?MESSAGE_FORMAT_KEY := Value} = Position, Record) ->
-   add_aircraft_data(T, Position, Record#{message_format => Value});
-add_aircraft_data([?RECEIVER_KEY | T], #{?RECEIVER_KEY := Value} = Position, Record) ->
-   add_aircraft_data(T, Position, Record#{receiver => Value});
-add_aircraft_data([?DEVICE_ID_KEY | T], #{?DEVICE_ID_KEY := Value} = Position, Record) ->
-   add_aircraft_data(T, Position, Record#{device_id => Value});
-add_aircraft_data([?TIMESTAMP_KEY | T], #{?TIMESTAMP_KEY := Value} = Position, Record) ->
-   add_aircraft_data(T, Position, Record#{time_stamp => Value});
-add_aircraft_data([_ | T], Position, Record) ->
-   add_aircraft_data(T, Position, Record);
-add_aircraft_data([], _, Record) ->
-   Record.
+   ok;
+process_parse_line_result(Res, Line) -> 
+   ?LOG_ERROR("ERROR ~p ~p", [Res, Line]),
+   ok.
