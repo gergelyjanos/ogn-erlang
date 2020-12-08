@@ -2,7 +2,7 @@
 -behaviour(gen_server).
 
 -export([start/0, start_link/0]).
--export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
+-export([init/1, handle_call/3, handle_cast/2, terminate/2, code_change/3]).
 
 -include("../ogn_collector.hrl").
 
@@ -17,21 +17,24 @@ start_link() ->
 init(_Args) ->
    {ok, #{aircrafts => #{}, receivers => #{}}}.
 
+handle_call(db_size, _From, #{aircrafts := Aircrafts, receivers := Receivers} = State) ->
+   Size = #{
+      aircraft_map_size => maps:size(Aircrafts),
+      receiver_map_size => maps:size(Receivers)
+   },
+   {reply, Size, State};
 handle_call(stop, _From, State) ->
-   {stop, normal, stopped, State};
-
-handle_call(_Request, _From, State) ->
-    {reply, ok, State}.
+   {stop, normal, stopped, State}.
 
 handle_cast({update_aircraft, #{aircraft_id := AircraftId} = Record}, #{aircrafts := Aircrafts} = State) ->
    Aircraft0 = maps:get(AircraftId, Aircrafts, #{}),
    Aircraft1 = maps:merge(Aircraft0, Record),
-   {noreply, State#{aircrafts := Aircrafts#{AircraftId => Aircraft1}}}.
+   {noreply, State#{aircrafts := Aircrafts#{AircraftId => Aircraft1}}};
 
-handle_info({db_size}, #{aircrafts := Aircrafts} = State) ->
-   Size = #{aircraft_size => maps:size(Aircrafts)},
-   ?LOG_INFO("MAP SIZE ~p", [Size]),
-   {reply, Size, State}.
+handle_cast({update_receiver, #{receiver_id := ReceiverId} = Record}, #{receivers := Receivers} = State) ->
+   Receiver0 = maps:get(ReceiverId, Receivers, #{}),
+   Receiver1 = maps:merge(Receiver0, Record),
+   {noreply, State#{receivers := Receivers#{ReceiverId => Receiver1}}}.
 
 terminate(_Reason, _State) ->
    ok.

@@ -119,7 +119,7 @@ process_recv({error, Reason}, State) ->
 %% @private
 send_keepalive(#{keepalive_time := KeepAliveTime, socket := Socket} = State, SystemTime)
     when (SystemTime == 0) orelse (SystemTime - ?KEEPALIVE_TIMEOUT > KeepAliveTime) ->
-        ?LOG_INFO("send #keepalive"),
+        ?LOG_DEBUG("send #keepalive"),
         gen_tcp:send(Socket, "#keepalive"),
         next_state(run, set_keepalive(State));
 send_keepalive(State, _SystemTime) ->

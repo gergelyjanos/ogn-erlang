@@ -22,13 +22,14 @@ update_aircraft(Record) ->
     ok.
 
 update_receiver(Record) ->
-    ?LOG_DEBUG("UPDATE RECEIVER ~p", [Record]),
+    gen_server:cast(ogn_repo_map_worker, {update_receiver, Record}),
+    % ?LOG_DEBUG("UPDATE RECEIVER ~p", [Record]),
     ok.
 
 info() ->
-    Size = gen_server:call(ogn_repo_map_worker, {db_size}),
+    Size = gen_server:call(ogn_repo_map_worker, db_size),
     ?LOG_INFO("REPO SIZE ~p", [Size]),
-    ok.
+    Size.
 
 
 % modify_receiver_position(_Position) ->
