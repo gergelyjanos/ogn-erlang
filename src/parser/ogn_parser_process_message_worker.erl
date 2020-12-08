@@ -57,7 +57,7 @@ code_change(_OldVsn, State, _Extra) ->
 process_parse_line_result(nomatch) -> 
    ok;
 process_parse_line_result({aircraft_position, Record}) ->
-   ?LOG_DEBUG("=== AIRCRAFT POS ~p", [Record]),
+   ogn_repo:add_aircraft_position(Record),
    ok;
 process_parse_line_result({receiver_position, Record}) ->
    ?LOG_DEBUG("--- RECEIVER POS ~p", [Record]),
